@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+
+
+<mapper namespace="com.ruoyi.mes.mapper.MesProjectMapper">
+
+    <!-- 没有开驼峰下划线匹配，自己写一个映射方式 -->
+    <resultMap id="mesProjectMap" type="MesProject">
+        <result property="id" column="id"/>
+        <result property="projectName" column="project_name"/>
+        <result property="projectHeader" column="project_header"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="status" column="status"/>
+        <result property="introduce" column="introduce"/>
+    </resultMap>
+
+
+    <!-- 查询项目维护列表 -->
+    <select id="selectMesProjectList" parameterType="MesProject" resultMap="mesProjectMap">
+        select id,project_name,project_header,start_date,end_date,status,introduce
+        from mes_project_maintenance
+        <where>
+            <if test="projectName != null and projectName != ''">
+                and project_name like concat('%',#{projectName},'%')
+            </if>
+            <if test="projectHeader != null and projectHeader != ''">
+                and project_header like concat('%',#{projectHeader},'%')
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and start_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                and end_date &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <!-- 新增项目维护 -->
+    <insert id="insertMesProject" parameterType="MesProject">
+        insert into mes_project_maintenance
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectName != null and projectName != ''">
+                project_name,
+            </if>
+            <if test="projectHeader != null and projectHeader != ''">
+                project_header,
+            </if>
+            <if test="startDate != null and startDate != ''">
+                start_date,
+            </if>
+            <if test="endDate != null and endDate != ''">
+                end_date,
+            </if>
+            <if test="status != null and status != ''">
+                status,
+            </if>
+            <if test="introduce != null and introduce != ''">
+                introduce,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="projectName != null and projectName != ''">
+                #{projectName},
+            </if>
+            <if test="projectHeader != null and projectHeader != ''">
+                #{projectHeader},
+            </if>
+            <if test="startDate != null and startDate != ''">
+                #{startDate},
+            </if>
+            <if test="endDate != null and endDate != ''">
+                #{endDate},
+            </if>
+            <if test="status != null and status != ''">
+                #{status},
+            </if>
+            <if test="introduce != null and introduce != ''">
+                #{introduce},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 修改项目维护 -->
+    <update id="updateMesProject" parameterType="MesProject">
+        update mes_project_maintenance
+        <set>
+            <if test="projectName != null and projectName != ''">
+                project_name = #{projectName},
+            </if>
+            <if test="projectHeader != null and projectHeader != ''">
+                project_header = #{projectHeader},
+            </if>
+            <if test="startDate != null and startDate != ''">
+                start_date = #{startDate},
+            </if>
+            <if test="endDate != null and endDate != ''">
+                end_date = #{endDate},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="introduce != null and introduce != ''">
+                introduce = #{introduce},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 删除项目维护 -->
+
+    <delete id="deleteMesProjectById" parameterType="Long">
+        delete from mes_project_maintenance where id = #{id}
+    </delete>
+
+    <!-- 批量删除项目维护 -->
+    <delete id="deleteMesProjectByIds" parameterType="Long">
+        delete from mes_project_maintenance where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据id查询项目维护 -->
+    <select id="selectMesProjectById" parameterType="Long" resultMap="mesProjectMap">
+        select id,project_name,project_header,start_date,end_date,status,introduce
+        from mes_project_maintenance
+        where id = #{id}
+    </select>
+
+
+</mapper>

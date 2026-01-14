@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.mes.mapper.MesProductMapper">
+
+    <resultMap type="MesProduct" id="MesProductResult">
+        <result property="id"    column="id"    />
+        <result property="modeName"    column="mode_name"    />
+        <result property="materialId"    column="material_id"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <resultMap id="MesProductVoResult" type="MesProductVo" extends="MesProductResult">
+        <result property="materialName"    column="material_name"    />
+        <result property="materialSpecifications"    column="material_specifications"    />
+        <result property="materialUnit"    column="material_unit"    />
+        <result property="materialModel"    column="material_model"    />
+    </resultMap>
+
+
+    <sql id="selectMesProductVo">
+        select id, mode_name, material_id, remark from mes_product
+    </sql>
+
+    <select id="selectMesProductList" parameterType="MesProduct" resultMap="MesProductVoResult">
+        select p.id, p.mode_name, p.material_id, p.remark ,
+               m.material_unit, m.material_specifications, m.material_model, m.material_name
+        from mes_product p left join wms_material  m on p.material_id = m.id
+        <where>
+            <if test="modeName != null  and modeName != ''"> and p.mode_name like concat('%', #{modeName}, '%')</if>
+            <if test="materialId != null "> and p.material_id = #{materialId}</if>
+        </where>
+    </select>
+
+    <select id="selectMesProductById" parameterType="Long" resultMap="MesProductResult">
+        <include refid="selectMesProductVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertMesProduct" parameterType="MesProduct" useGeneratedKeys="true" keyProperty="id">
+        insert into mes_product
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="modeName != null and modeName != ''">mode_name,</if>
+            <if test="materialId != null">material_id,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="modeName != null and modeName != ''">#{modeName},</if>
+            <if test="materialId != null">#{materialId},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMesProduct" parameterType="MesProduct">
+        update mes_product
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="modeName != null and modeName != ''">mode_name = #{modeName},</if>
+            <if test="materialId != null">material_id = #{materialId},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMesProductById" parameterType="Long">
+        delete from mes_product where id = #{id}
+    </delete>
+
+    <delete id="deleteMesProductByIds" parameterType="String">
+        delete from mes_product where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

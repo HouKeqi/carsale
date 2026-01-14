@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.platform.mapper.PlatSelectPaperMapper">
+
+    <resultMap type="PlatSelectPaper" id="PlatSelectPaperResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="selectId1"    column="select_id_1"    />
+        <result property="selectId2"    column="select_id_2"    />
+        <result property="selectId3"    column="select_id_3"    />
+    </resultMap>
+
+    <sql id="selectPlatSelectPaperVo">
+        select id, user_id, select_id_1, select_id_2, select_id_3 from plat_select_paper
+    </sql>
+
+    <select id="selectPlatSelectPaperList" parameterType="PlatSelectPaper" resultMap="PlatSelectPaperResult">
+        <include refid="selectPlatSelectPaperVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="selectId1 != null "> and select_id_1 = #{selectId1}</if>
+            <if test="selectId2 != null "> and select_id_2 = #{selectId2}</if>
+            <if test="selectId3 != null "> and select_id_3 = #{selectId3}</if>
+        </where>
+    </select>
+
+    <select id="selectPlatSelectPaperById" parameterType="Long" resultMap="PlatSelectPaperResult">
+        <include refid="selectPlatSelectPaperVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPlatSelectPaper" parameterType="PlatSelectPaper" useGeneratedKeys="true" keyProperty="id">
+        insert into plat_select_paper
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="selectId1 != null">select_id_1,</if>
+            <if test="selectId2 != null">select_id_2,</if>
+            <if test="selectId3 != null">select_id_3,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="selectId1 != null">#{selectId1},</if>
+            <if test="selectId2 != null">#{selectId2},</if>
+            <if test="selectId3 != null">#{selectId3},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePlatSelectPaper" parameterType="PlatSelectPaper">
+        update plat_select_paper
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="selectId1 != null">select_id_1 = #{selectId1},</if>
+            <if test="selectId2 != null">select_id_2 = #{selectId2},</if>
+            <if test="selectId3 != null">select_id_3 = #{selectId3},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePlatSelectPaperById" parameterType="Long">
+        delete from plat_select_paper where id = #{id}
+    </delete>
+
+    <delete id="deletePlatSelectPaperByIds" parameterType="String">
+        delete from plat_select_paper where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据userId查询课题号 -->
+    <select id="selectPlatSelectPaperByUserId" parameterType="Long" resultMap="PlatSelectPaperResult">
+        select id, user_id, select_id_1, select_id_2, select_id_3
+        from plat_select_paper
+        where user_id = #{userId}
+    </select>
+
+    <!-- 根据userId更新课题号 -->
+    <update id="updatePlatSelectPaperByUserId" parameterType="PlatSelectPaper">
+        update plat_select_paper
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="selectId1 != null ">select_id_1 = #{selectId1},</if>
+            <if test="selectId2 != null">select_id_2 = #{selectId2},</if>
+            <if test="selectId3 != null">select_id_3 = #{selectId3},</if>
+        </trim>
+        where user_id = #{userId}
+    </update>
+</mapper>

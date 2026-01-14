@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.platform.mapper.PlatUserMapper">
+
+    <resultMap type="PlatUser" id="PlatUserResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="password"    column="password"    />
+        <result property="studentId"    column="student_id"    />
+        <result property="phone"    column="phone"    />
+        <result property="qq"    column="qq"    />
+        <result property="email"    column="email"    />
+        <result property="role"    column="role"    />
+        <result property="select1"    column="select_1"    />
+        <result property="select2"    column="select_2"    />
+        <result property="select3"    column="select_3"    />
+        <result property="userId"    column="user_id"    />
+    </resultMap>
+
+    <sql id="selectPlatUserVo">
+        select id, name, password, student_id, phone, qq, email, role, select_1, select_2, select_3, user_id
+        from plat_user
+    </sql>
+
+    <select id="selectPlatUserList" parameterType="PlatUser" resultMap="PlatUserResult">
+        <include refid="selectPlatUserVo"/>
+        <where>
+            <if test="id != null "> and id = #{id}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="password != null  and password != ''"> and password = #{password}</if>
+            <if test="studentId != null  and studentId != ''"> and student_id = #{studentId}</if>
+            <if test="phone != null  and phone != ''"> and phone = #{phone}</if>
+            <if test="qq != null  and qq != ''"> and qq = #{qq}</if>
+            <if test="email != null  and email != ''"> and email = #{email}</if>
+            <if test="role != null  and role != ''"> and role = #{role}</if>
+            <if test="select1 != null "> and select_1 = #{select1}</if>
+            <if test="select2 != null "> and select_2 = #{select2}</if>
+            <if test="select3 != null "> and select_3 = #{select3}</if>
+            <if test="userId != null "> and user_id = #{user_id}</if>
+        </where>
+    </select>
+
+    <select id="selectPlatUserById" parameterType="Long" resultMap="PlatUserResult">
+        <include refid="selectPlatUserVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPlatUser" parameterType="PlatUser" useGeneratedKeys="true" keyProperty="id">
+        insert into plat_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">name,</if>
+            <if test="password != null">password,</if>
+            <if test="studentId != null">student_id,</if>
+            <if test="phone != null">phone,</if>
+            <if test="qq != null">qq,</if>
+            <if test="email != null">email,</if>
+            <if test="role != null">role,</if>
+            <if test="select1 != null">select_1,</if>
+            <if test="select2 != null">select_2,</if>
+            <if test="select3 != null">select_3,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null">#{name},</if>
+            <if test="password != null">#{password},</if>
+            <if test="studentId != null">#{studentId},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="qq != null">#{qq},</if>
+            <if test="email != null">#{email},</if>
+            <if test="role != null">#{role},</if>
+            <if test="select1 != null">#{select1},</if>
+            <if test="select2 != null">#{select2},</if>
+            <if test="select3 != null">#{select3},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePlatUser" parameterType="PlatUser">
+        update plat_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">name = #{name},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="studentId != null">student_id = #{studentId},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="qq != null">qq = #{qq},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="select1 != null">select_1 = #{select1},</if>
+            <if test="select2 != null">select_2 = #{select2},</if>
+            <if test="select3 != null">select_3 = #{select3},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePlatUserById" parameterType="Long">
+        delete from plat_user where id = #{id}
+    </delete>
+
+    <delete id="deletePlatUserByIds" parameterType="String">
+        delete from plat_user where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <select id="selectPlatUserByUserId" parameterType="Long" resultMap="PlatUserResult">
+        <include refid="selectPlatUserVo"/>
+        where user_id = #{userId}
+    </select>
+
+</mapper>

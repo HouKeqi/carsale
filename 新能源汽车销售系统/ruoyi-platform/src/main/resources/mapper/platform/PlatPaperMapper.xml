@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.platform.mapper.PlatPaperMapper">
+
+    <resultMap type="PlatPaper" id="PlatPaperResult">
+        <result property="id"    column="id"    />
+        <result property="topic"    column="topic"    />
+        <result property="type"    column="type"    />
+        <result property="ask"    column="ask"    />
+        <result property="code"    column="code"    />
+        <result property="teacherName"    column="teacher_name"    />
+        <result property="teacherPhone"    column="teacher_phone"    />
+        <result property="bond"    column="bond"    />
+        <result property="gradeInstruct"    column="grade_instruct"    />
+        <result property="gradeReview"    column="grade_review"    />
+        <result property="gradeDefence"    column="grade_defence"    />
+        <result property="grade"    column="grade"    />
+    </resultMap>
+
+    <sql id="selectPlatPaperVo">
+        select id, topic, type, ask, code, teacher_name, teacher_phone, bond, grade_instruct,
+               grade_review, grade_defence, grade
+        from plat_paper
+    </sql>
+
+    <select id="selectPlatPaperList" parameterType="PlatPaper" resultMap="PlatPaperResult">
+        <include refid="selectPlatPaperVo"/>
+        <where>
+            <if test="topic != null  and topic != ''"> and topic like concat('%', #{topic}, '%')</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="ask != null  and ask != ''"> and ask = #{ask}</if>
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="teacherName != null  and teacherName != ''"> and teacher_name = #{teacherName}</if>
+            <if test="teacherPhone != null  and teacherPhone != ''"> and teacher_phone = #{teacherPhone}</if>
+            <if test="bond != null  and bond != ''"> and bond = #{bond}</if>
+            <if test="gradeInstruct != null  and gradeInstruct != ''"> and grade_instruct = #{gradeInstruct}</if>
+            <if test="gradeReview != null  and gradeReview != ''"> and grade_review = #{gradeReview}</if>
+            <if test="gradeDefence != null  and gradeDefence != ''"> and grade_defence = #{gradeDefence}</if>
+            <if test="grade != null  and grade != ''"> and grade = #{grade}</if>
+            <if test="teacher_id != null"> and teacher_id = #{teacher_id}</if>
+        </where>
+    </select>
+
+    <select id="selectPlatPaperById" parameterType="Long" resultMap="PlatPaperResult">
+        <include refid="selectPlatPaperVo"/>
+        where id = #{id}
+    </select>
+
+
+
+    <insert id="insertPlatPaper" parameterType="PlatPaper" useGeneratedKeys="true" keyProperty="id">
+        insert into plat_paper
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="topic != null">topic,</if>
+            <if test="type != null">type,</if>
+            <if test="ask != null">ask,</if>
+            <if test="code != null">code,</if>
+            <if test="teacherName != null">teacher_name,</if>
+            <if test="teacherPhone != null">teacher_phone,</if>
+            <if test="bond != null">bond,</if>
+            <if test="gradeInstruct != null">grade_instruct,</if>
+            <if test="gradeReview != null">grade_review,</if>
+            <if test="gradeDefence != null">grade_defence,</if>
+            <if test="grade != null">grade,</if>
+            <if test="teacher_id != null">teacher_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="topic != null">#{topic},</if>
+            <if test="type != null">#{type},</if>
+            <if test="ask != null">#{ask},</if>
+            <if test="code != null">#{code},</if>
+            <if test="teacherName != null">#{teacherName},</if>
+            <if test="teacherPhone != null">#{teacherPhone},</if>
+            <if test="bond != null">#{bond},</if>
+            <if test="gradeInstruct != null">#{gradeInstruct},</if>
+            <if test="gradeReview != null">#{gradeReview},</if>
+            <if test="gradeDefence != null">#{gradeDefence},</if>
+            <if test="grade != null">#{grade},</if>
+            <if test="teacher_id != null">#{teacher_id},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePlatPaper" parameterType="PlatPaper">
+        update plat_paper
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="topic != null">topic = #{topic},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="ask != null">ask = #{ask},</if>
+            <if test="code != null">code = #{code},</if>
+            <if test="teacherName != null">teacher_name = #{teacherName},</if>
+            <if test="teacherPhone != null">teacher_phone = #{teacherPhone},</if>
+            <if test="bond != null">bond = #{bond},</if>
+            <if test="gradeInstruct != null">grade_instruct = #{gradeInstruct},</if>
+            <if test="gradeReview != null">grade_review = #{gradeReview},</if>
+            <if test="gradeDefence != null">grade_defence = #{gradeDefence},</if>
+            <if test="grade != null">grade = #{grade},</if>
+            <if test="teacher_id != null">teacher_id = #{teacher_id},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePlatPaperById" parameterType="Long">
+        delete from plat_paper where id = #{id}
+    </delete>
+
+    <delete id="deletePlatPaperByIds" parameterType="String">
+        delete from plat_paper where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+
+
+    <select id="slectUnslectPaperList" parameterType="PlatPaper" resultMap="PlatPaperResult">
+        SELECT * FROM plat_paper
+        <where>
+            id NOT IN (
+            SELECT COALESCE(select_id_1,0) FROM plat_select_paper WHERE user_id = #{userId}
+            UNION
+            SELECT COALESCE(select_id_2,0) FROM plat_select_paper WHERE user_id = #{userId}
+            UNION
+            SELECT COALESCE(select_id_3,0) FROM plat_select_paper WHERE user_id = #{userId}
+            )
+            <if test="topic != null and topic != ''"> AND topic LIKE CONCAT('%', #{topic}, '%')</if>
+            <if test="type != null and type != ''"> AND type = #{type}</if>
+            <if test="ask != null and ask != ''"> AND ask = #{ask}</if>
+            <if test="code != null and code != ''"> AND code = #{code}</if>
+            <if test="teacherName != null and teacherName != ''"> AND teacher_name = #{teacherName}</if>
+            <if test="teacherPhone != null and teacherPhone != ''"> AND teacher_phone = #{teacherPhone}</if>
+            <if test="bond != null and bond != ''"> AND bond = #{bond}</if>
+            <if test="gradeInstruct != null and gradeInstruct != ''"> AND grade_instruct = #{gradeInstruct}</if>
+            <if test="gradeReview != null and gradeReview != ''"> AND grade_review = #{gradeReview}</if>
+            <if test="gradeDefence != null and gradeDefence != ''"> AND grade_defence = #{gradeDefence}</if>
+            <if test="grade != null and grade != ''"> AND grade = #{grade}</if>
+        </where>
+    </select>
+
+
+    <update id="updatePaperManageBondInfoByTeacher" parameterType="PlatPaper">
+        update plat_paper
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="type != null">type = #{type},</if>
+            <if test="ask != null">ask = #{ask},</if>
+            <if test="code != null">code = #{code},</if>
+            <if test="teacherName != null">teacher_name = #{teacherName},</if>
+            <if test="teacherPhone != null">teacher_phone = #{teacherPhone},</if>
+            <if test="bond != null">bond = #{bond},</if>
+            <if test="gradeInstruct != null">grade_instruct = #{gradeInstruct},</if>
+            <if test="gradeReview != null">grade_review = #{gradeReview},</if>
+            <if test="gradeDefence != null">grade_defence = #{gradeDefence},</if>
+            <if test="grade != null">grade = #{grade},</if>
+        </trim>
+        where topic = #{topic}
+    </update>
+
+
+    <select id="getBondPaperByStudentId" parameterType="String" resultMap="PlatPaperResult">
+        <include refid="selectPlatPaperVo"/>
+        where bond = #{bond}
+    </select>
+
+
+</mapper>
