@@ -71,6 +71,12 @@
             <artifactId>ruoyi-platform</artifactId>
         </dependency>
 
+        <!-- carsale模块-->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-carsale</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
