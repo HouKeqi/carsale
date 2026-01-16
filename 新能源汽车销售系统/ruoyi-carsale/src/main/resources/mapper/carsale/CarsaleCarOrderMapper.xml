@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.carsale.mapper.CarsaleCarOrderMapper">
+
+    <resultMap id="CarsaleCarOrderMap" type="CarsaleCarOrder">
+        <result property="id" column="id"/>
+        <result property="projectName" column="project_name"/>
+        <result property="projectHeader" column="project_header"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="status" column="status"/>
+        <result property="introduction" column="introduce"/>
+    </resultMap>
+
+
+    <select id="selectCarsaleCarOrderList" parameterType="CarsaleCarOrder" resultMap="CarsaleCarOrderMap">
+        select id, project_name, project_header, start_date, end_date, status, introduce from mes_project_maintenance
+        <where>
+            <if test="projectName != null  and projectName != ''">         and project_name like concat('%', #{projectName}, '%')         </if>
+            <if test="projectHeader != null  and projectHeader != ''">     and project_header like concat('%', #{project_header}, '%')    </if>
+            <if test="startDate != null  and startDate != ''">             and start_date &lt;= #{startDate}                                 </if>
+            <if test="endDate != null  and endDate != ''">                 and end_date &gt;= #{endDate}                                     </if>
+        </where>
+    </select>
+
+
+
+
+</mapper>
