@@ -18,10 +18,11 @@
     <select id="selectCarsaleCarOrderList" parameterType="CarsaleCarOrder" resultMap="CarsaleCarOrderMap">
         select id, project_name, project_header, start_date, end_date, status, introduce from mes_project_maintenance
         <where>
-            <if test="projectName != null  and projectName != ''">         and project_name like concat('%', #{projectName}, '%')         </if>
-            <if test="projectHeader != null  and projectHeader != ''">     and project_header like concat('%', #{project_header}, '%')    </if>
-            <if test="startDate != null  and startDate != ''">             and start_date &lt;= #{startDate}                                 </if>
-            <if test="endDate != null  and endDate != ''">                 and end_date &gt;= #{endDate}                                     </if>
+            <if test="projectName != null  and projectName != ''">         and project_name like concat('%', #{projectName}, '%')             </if>
+            <if test="projectHeader != null  and projectHeader != ''">     and project_header like concat('%', #{projectHeader}, '%')        </if>
+            <if test="startDate != null  and startDate != ''">             and start_date &lt;= #{startDate}                                  </if>
+            <if test="endDate != null  and endDate != ''">                 and end_date &gt;= #{endDate}                                      </if>
+            <if test="status != null  and status != ''">                   and status = #{status}                                             </if>
         </where>
     </select>
 

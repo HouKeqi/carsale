@@ -113,14 +113,6 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-
-
-
-
-
-
-
-
     <!-- 表格数据显示 -->
     <el-table v-loading="loading" :data="projectList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
