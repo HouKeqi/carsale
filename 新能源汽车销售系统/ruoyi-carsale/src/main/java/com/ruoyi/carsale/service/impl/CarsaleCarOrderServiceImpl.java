@@ -19,4 +19,29 @@ public class CarsaleCarOrderServiceImpl implements ICarsaleCarOrderService {
     public List<CarsaleCarOrder> selectCarsaleCarOrderList(CarsaleCarOrder carsaleCarOrder) {
         return carsaleCarOrderMapper.selectCarsaleCarOrderList(carsaleCarOrder);
     }
+
+    @Override
+    public int insertCarsaleCarOrder(CarsaleCarOrder carsaleCarOrder) {
+        return carsaleCarOrderMapper.insertCarsaleCarOrder(carsaleCarOrder);
+    }
+
+    @Override
+    public int updateCarsaleCarOrder(CarsaleCarOrder carsaleCarOrder) {
+        return carsaleCarOrderMapper.updateCarsaleCarOrder(carsaleCarOrder);
+    }
+
+    @Override
+    public int deleteCarsaleCarOrderById(Long id) {
+        return carsaleCarOrderMapper.deleteCarsaleCarOrderById(id);
+    }
+
+    @Override
+    public int deleteCarsaleCarOrderByIds(Long[] ids) {
+        return carsaleCarOrderMapper.deleteCarsaleCarOrderByIds(ids);
+    }
+
+    @Override
+    public CarsaleCarOrder selectCarsaleCarOrderById(Long id) {
+        return carsaleCarOrderMapper.selectCarsaleCarOrderById(id);
+    }
 }

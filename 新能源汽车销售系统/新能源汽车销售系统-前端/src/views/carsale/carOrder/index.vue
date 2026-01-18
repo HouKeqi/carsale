@@ -53,6 +53,37 @@
       </el-form-item>
     </el-form>
 
+
+
+
+
+    <!-- 按钮显示 -->
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <!-- v-hasPermi属性 判断是否有【carsale:carorder:add】权限 -->
+        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
+                   v-hasPermi="['carsale:carorder:add']">新增</el-button>
+      </el-col>
+
+      <el-col :span="1.5">
+        <el-button type="success" plain icon="el-icon-edit" size="mini" :disabled="single"
+                   @click="handleUpdate" v-hasPermi="['carsale:carorder:edit']">修改</el-button>
+      </el-col>
+
+      <el-col :span="1.5">
+        <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple"
+                   @click="handleDelete" v-hasPermi="['carsale:carorder:remove']">删除</el-button>
+      </el-col>
+
+      <el-col :span="1.5">
+        <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
+                   v-hasPermi="['carsale:carorder:export']">导出</el-button>
+      </el-col>
+
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+    </el-row>
+
+
     <!-- 表格数据显示 -->
     <el-table v-loading="loading" :data="CarOrderList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
@@ -94,11 +125,50 @@
     <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum"
                 :limit.sync="queryParams.pageSize" @pagination="getList"/>
 
+
+    <!-- 添加或修改用户购车对话框 -->
+    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+
+        <el-form-item label="项目名称" prop="projectName">
+          <el-input v-model="form.projectName" placeholder="请输入项目名称" />
+
+        </el-form-item>
+        <el-form-item label="项目负责人" prop="projectHeader">
+          <el-input v-model="form.projectHeader" placeholder="请输入项目负责人" />
+        </el-form-item>
+
+        <el-form-item label="项目时间">
+          <el-date-picker v-model="dateRangeForm" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
+                          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+        </el-form-item>
+
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="form.status">
+            <el-radio
+              v-for="dict in dict.type.carsale_carorder_status" :key="dict.value" :label="dict.value">{{dict.label}}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="项目描述" prop="introduce">
+          <el-input v-model="form.introduce" type="textarea" placeholder="请输入项目描述" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+
+
+
+
+
   </div>
 </template>
 
 <script>
-import { getCarOrderList } from "@/api/carsale/carOrder";
+import { getCarOrderList, addCarOrder ,editCarOrder,deleteCarOrder,getCarOrder} from "@/api/carsale/carOrder";
 export default {
   // 引入自定义的数据字典
   dicts: ['carsale_carorder_status'],
@@ -113,7 +183,7 @@ export default {
         pageSize: 10,
         projectHeader: undefined,
         projectName: undefined,
-        status: undefined
+        status: undefined,
       },
 
       //是否显示搜索栏
@@ -122,12 +192,59 @@ export default {
       // 时间区间，dateRange[0]代表开始时间，dateRange[1]代表结束时间,具体赋值的时候，会在 handleQuery 函数里面完成
       dateRange: [],
 
+      // 对话框里面的时间参数
+      dateRangeForm:[],
+
+      // 添加或修改用户购车对话框标题
+      title: "添加用户购车",
+
+      // "添加或修改用户购车对话框"是否可见，默认隐藏
+      open: false,
+
+      // 添加或修改用户购车对话框数据
+      form: {
+        id: undefined,
+        projectName: undefined,
+        projectHeader: undefined,
+        status: undefined,
+        introduce: undefined
+      },
+
+      // 添加或修改用户购车对话框验证规则
+      rules: {
+        projectName: [
+          { required: true, message: "项目名称不能为空", trigger: "blur" }
+        ],
+        projectHeader: [
+          { required: true, message: "项目负责人不能为空", trigger: "blur" }
+        ],
+      },
+
+      // 复选框
+      ids:[],
+      single: true,
+      multiple: true,
+
+
     };
   },
   created() {
     this.getList();
   },
   methods: {
+
+    handleStartAndEndDate(data,dateRange)
+    {
+      if(dateRange == null || dateRange.length === 0)
+      {
+        data.startDate = null;
+        data.endDate = null;
+        return;
+      }
+      data.startDate = dateRange[0];
+      data.endDate = dateRange[1];
+      console.log(data);
+    },
 
     getList() {
       this.loading = true;
@@ -151,27 +268,116 @@ export default {
       // 重置页码
       this.queryParams.pageNum = 1;
 
-      // 设置时间参数
-      if (this.dateRange && this.dateRange.length === 2) {
-        this.queryParams.startDate = this.dateRange[0];
-        this.queryParams.endDate = this.dateRange[1];
-      } else {
-        // 如果清空了时间，也要清空查询参数里的时间
-        this.queryParams.startDate = undefined;
-        this.queryParams.endDate = undefined;
-      }
+      this.handleStartAndEndDate(this.queryParams,this.dateRange) ;
+
+      // 输出
+      // 输出一句话“啊啊啊啊啊”,后面加上queryParams
+      console.log("最终提交的 Body 数据：", this.queryParams);
 
       this.getList();
     },
 
-    /** 重置按钮操作 */
+    /** 查询的重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
       this.dateRange = [];
       this.handleQuery();
     },
 
+    /** 新增按钮操作 */
+    handleAdd() {
+      this.title = "新增项目维护";
+      this.open = true;
+      this.reset();
+    },
 
+    /** 对话框的提交按钮 操作 */
+    /** 提交按钮操作 */
+    submitForm()
+    {
+      this.handleStartAndEndDate(this.form,this.dateRangeForm);
+
+      // 强制将 status 转为数字后再提交
+      if (this.form.status !== undefined && this.form.status !== null) {
+        this.form.status = parseInt(this.form.status);
+      }
+
+      // 判断新增/修改【有没有id】
+      if(this.form.id)
+      {
+        // 输出修改数据
+        console.log("最终提交的 Body 数据：", this.form);
+        // 修改
+        editCarOrder(this.form).then(res => {
+          this.$modal.msgSuccess("修改成功");
+          this.getList();
+        })
+      }
+      else
+      {
+        // 新增
+        addCarOrder(this.form).then(res => {
+          this.$modal.msgSuccess("新增成功");
+          this.getList();
+
+        })
+      }
+      this.open = false;
+    },
+
+    /** 对话框的取消按钮 操作 */
+    cancel() {
+      this.open = false;
+      // 重置表单
+      this.reset();
+    },
+
+    /** 表单重置 */
+    reset() {
+      this.form = {
+        id: undefined,
+        projectName: undefined,
+        projectHeader: undefined,
+        status: "0",
+        introduce: undefined
+      };
+      this.dateRangeForm = [];
+      this.resetForm("form");
+    },
+
+    /** 表格某一行的修改按钮操作 */
+    handleUpdate(row){
+      this.title = "编辑项目维护";
+      this.open = true;
+      // 重置对话框
+      this.reset();
+      // 加载维护项目的信息
+      let id = row.id || this.ids[0];
+      getCarOrder(id).then(res => {
+        this.form = res.data;
+        this.dateRangeForm[0] = this.form.startDate;
+        this.dateRangeForm[1] = this.form.endDate;
+      })
+    },
+
+    /** 表格某一行的删除按钮操作 */
+    handleDelete(row) {
+      // 路径参数，数组和单个数都可以
+      const ids = row.id || this.ids;
+      this.$modal.confirm('是否确认删除项目编号为"' + ids + '"的项目？').then(function() {
+        return deleteCarOrder(ids);
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
+    },
+
+    /** 导出按钮操作 */
+    handleExport() {
+      this.download('carsale/carOrder/export', {
+        ...this.queryParams
+      }, `用户购车列表_${new Date().getTime()}.xlsx`)
+    }
 
 
 

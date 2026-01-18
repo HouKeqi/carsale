@@ -328,7 +328,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       // 路径参数，数组和单个数都可以
-      const ids = row.postId || this.ids;
+      const ids = row.id || this.ids;
       this.$modal.confirm('是否确认删除项目编号为"' + ids + '"的项目？').then(function() {
         return deleteMesProject(ids);
       }).then(() => {

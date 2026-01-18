@@ -6,16 +6,32 @@ package com.ruoyi.carsale.domain;
  * 用户购车实体类
  */
 
+import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 public class CarsaleCarOrder extends BaseEntity {
+    @Excel(name = "项目编号")
     private Long id;
+    @Excel(name = "项目名称")
     private String projectName;
+    @Excel(name = "项目负责人")
     private String projectHeader;
+    @Excel(name = "开始时间")
     private String startDate;
+    @Excel(name = "结束时间")
     private String endDate;
+    @Excel(name = "项目介绍")
     private Integer status;
-    private String introduction;
+    @Excel(name = "项目介绍")
+    private String introduce;
+
+    public String getIntroduce() {
+        return introduce;
+    }
+
+    public void setIntroduce(String introduce) {
+        this.introduce = introduce;
+    }
 
     public Long getId() {
         return id;
@@ -63,13 +79,5 @@ public class CarsaleCarOrder extends BaseEntity {
 
     public void setStatus(Integer status) {
         this.status = status;
-    }
-
-    public String getIntroduction() {
-        return introduction;
-    }
-
-    public void setIntroduction(String introduction) {
-        this.introduction = introduction;
     }
 }

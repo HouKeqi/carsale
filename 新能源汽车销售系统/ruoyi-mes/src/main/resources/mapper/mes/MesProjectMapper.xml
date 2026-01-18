@@ -115,7 +115,6 @@
     </update>
 
     <!-- 删除项目维护 -->
-
     <delete id="deleteMesProjectById" parameterType="Long">
         delete from mes_project_maintenance where id = #{id}
     </delete>
