@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.carsale.mapper.AdminVehicleManageMapper">
+
+    <resultMap type="Vehicle" id="VehicleResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="brand"    column="brand"    />
+        <result property="price"    column="price"    />
+        <result property="batteryType"    column="battery_type"    />
+        <result property="rangeKm"    column="range_km"    />
+        <result property="stock"    column="stock"    />
+        <result property="launchDate"    column="launch_date"    />
+        <result property="configJson"    column="config_json"    />
+        <result property="description"    column="description"    />
+        <result property="imageUrl"    column="image_url"    />
+    </resultMap>
+
+    <sql id="selectVehicleVo">
+        select id, name, brand, price, battery_type, range_km, stock, launch_date, config_json, description, image_url from vehicle
+    </sql>
+
+    <select id="selectVehicleList" parameterType="Vehicle" resultMap="VehicleResult">
+        <include refid="selectVehicleVo"/>
+        <where>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="brand != null  and brand != ''"> and brand = #{brand}</if>
+            <if test="price != null "> and price = #{price}</if>
+            <if test="batteryType != null "> and battery_type = #{batteryType}</if>
+            <if test="rangeKm != null "> and range_km = #{rangeKm}</if>
+            <if test="stock != null "> and stock = #{stock}</if>
+            <if test="launchDate != null "> and launch_date = #{launchDate}</if>
+            <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>
+        </where>
+    </select>
+
+    <select id="selectVehicleById" parameterType="Long" resultMap="VehicleResult">
+        <include refid="selectVehicleVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertVehicle" parameterType="Vehicle" useGeneratedKeys="true" keyProperty="id">
+        insert into vehicle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name,</if>
+            <if test="brand != null and brand != ''">brand,</if>
+            <if test="price != null">price,</if>
+            <if test="batteryType != null">battery_type,</if>
+            <if test="rangeKm != null">range_km,</if>
+            <if test="stock != null">stock,</if>
+            <if test="launchDate != null">launch_date,</if>
+            <if test="configJson != null">config_json,</if>
+            <if test="description != null">description,</if>
+            <if test="imageUrl != null">image_url,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="brand != null and brand != ''">#{brand},</if>
+            <if test="price != null">#{price},</if>
+            <if test="batteryType != null">#{batteryType},</if>
+            <if test="rangeKm != null">#{rangeKm},</if>
+            <if test="stock != null">#{stock},</if>
+            <if test="launchDate != null">#{launchDate},</if>
+            <if test="configJson != null">#{configJson},</if>
+            <if test="description != null">#{description},</if>
+            <if test="imageUrl != null">#{imageUrl},</if>
+        </trim>
+    </insert>
+
+    <update id="updateVehicle" parameterType="Vehicle">
+        update vehicle
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="brand != null and brand != ''">brand = #{brand},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="batteryType != null">battery_type = #{batteryType},</if>
+            <if test="rangeKm != null">range_km = #{rangeKm},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="launchDate != null">launch_date = #{launchDate},</if>
+            <if test="configJson != null">config_json = #{configJson},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteVehicleById" parameterType="Long">
+        delete from vehicle where id = #{id}
+    </delete>
+
+    <delete id="deleteVehicleByIds" parameterType="String">
+        delete from vehicle where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 查找stock数量小于等于5的所有车辆信息 selectStockWarningList -->
+    <select id="selectStockWarningList" resultMap="VehicleResult">
+        select id, name, brand, price, battery_type, range_km, stock, launch_date, config_json, description, image_url
+        from vehicle
+        where stock &lt;= 5
+
+    </select>
+
+</mapper>
