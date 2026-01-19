@@ -11,7 +11,7 @@
  Target Server Version : 80040 (8.0.40)
  File Encoding         : 65001
 
- Date: 19/01/2026 18:00:20
+ Date: 20/01/2026 01:32:50
 */
 
 SET NAMES utf8mb4;
@@ -50,8 +50,8 @@ CREATE TABLE `carsale_orders`  (
   `vehicle_id` bigint NOT NULL COMMENT '关联购车车型',
   `status` int NULL DEFAULT 0 COMMENT '0-待付, 1-已付, 2-待提, 3-完成, 4-取消',
   `amount` decimal(12, 2) NOT NULL COMMENT '实际成交金额',
-  `number` int NOT NULL COMMENT '购车数量',
-  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '联系方式',
+  `number` int NOT NULL DEFAULT 1,
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `store_location` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '提车门店名称',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '下单时间',
   `pay_time` datetime NULL DEFAULT NULL COMMENT '支付完成时间',
@@ -65,6 +65,7 @@ CREATE TABLE `carsale_orders`  (
 -- ----------------------------
 -- Records of carsale_orders
 -- ----------------------------
+INSERT INTO `carsale_orders` VALUES (202601130001, 2, 1, 1, 258900.00, 1, NULL, '上海中心门店', '2026-01-19 23:19:14', NULL);
 
 -- ----------------------------
 -- Table structure for carsale_promotion
@@ -81,11 +82,14 @@ CREATE TABLE `carsale_promotion`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `fk_promotion_vehicle`(`vehicle_id` ASC) USING BTREE,
   CONSTRAINT `fk_promotion_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '促销活动管理表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '促销活动管理表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of carsale_promotion
 -- ----------------------------
+INSERT INTO `carsale_promotion` VALUES (1, '春季购车送桩', 1, 1, 3000.00, '2026-01-01 00:00:00', '2026-03-31 00:00:00');
+INSERT INTO `carsale_promotion` VALUES (2, '春季购车送桩', 1, 1, 3000.00, '2026-01-01 00:00:00', '2026-03-31 00:00:00');
+INSERT INTO `carsale_promotion` VALUES (3, '春季购车送桩', 1, 1, 3000.00, '2026-01-01 00:00:00', '2026-03-31 00:00:00');
 
 -- ----------------------------
 -- Table structure for carsale_test_drive
@@ -126,11 +130,180 @@ CREATE TABLE `carsale_vehicle`  (
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
   `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of carsale_vehicle
 -- ----------------------------
+INSERT INTO `carsale_vehicle` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy1
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy1`;
+CREATE TABLE `carsale_vehicle_copy1`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy1
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy1` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy2
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy2`;
+CREATE TABLE `carsale_vehicle_copy2`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy2
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy2` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy3
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy3`;
+CREATE TABLE `carsale_vehicle_copy3`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy3
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy3` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy4
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy4`;
+CREATE TABLE `carsale_vehicle_copy4`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy4
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy4` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy5
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy5`;
+CREATE TABLE `carsale_vehicle_copy5`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy5
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy5` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for gen_table
@@ -159,7 +332,7 @@ CREATE TABLE `gen_table`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`table_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '代码生成业务表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '代码生成业务表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of gen_table
@@ -173,6 +346,7 @@ INSERT INTO `gen_table` VALUES (6, 'plat_user', '用户信息表', NULL, NULL, '
 INSERT INTO `gen_table` VALUES (7, 'plat_paper', '论文管理表', NULL, NULL, 'PlatPaper', 'crud', 'element-ui', 'com.ruoyi.platform', 'platform', 'paperManage', '论文管理', 'ruoyi', '0', '/', '{}', 'admin', '2024-07-03 15:01:42', '', '2024-07-03 15:42:25', NULL);
 INSERT INTO `gen_table` VALUES (9, 'plat_select_paper', '学生选择的3个课题号', NULL, NULL, 'PlatSelectPaper', 'crud', 'element-ui', 'com.ruoyi.platform', 'platform', 'selectPaper', '学生选择的3个课题号', 'ruoyi', '0', '/', '{}', 'admin', '2024-07-04 09:50:36', '', '2024-07-04 09:53:37', NULL);
 INSERT INTO `gen_table` VALUES (10, 'plat_opening', '开题报告表', NULL, NULL, 'PlatOpening', 'crud', 'element-ui', 'com.ruoyi.paperUpload', 'paperUpload', 'paperUpload', '开题报告', 'ruoyi', '0', '/', '{}', 'admin', '2024-07-06 08:55:32', '', '2024-07-06 09:11:28', NULL);
+INSERT INTO `gen_table` VALUES (11, 'vehicle', '车辆信息基础表', NULL, NULL, 'Vehicle', 'crud', '', 'com.ruoyi.system', 'system', 'vehicle', '车辆信息基础', 'ruoyi', '0', '/', NULL, 'admin', '2026-01-19 23:33:38', '', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for gen_table_column
@@ -202,7 +376,7 @@ CREATE TABLE `gen_table_column`  (
   `update_by` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '更新者',
   `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`column_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 69 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '代码生成业务表字段' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 80 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '代码生成业务表字段' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of gen_table_column
@@ -270,6 +444,17 @@ INSERT INTO `gen_table_column` VALUES (65, 10, 'opening', '开题报告', 'varch
 INSERT INTO `gen_table_column` VALUES (66, 10, 'status', '状态', 'varchar(255)', 'String', 'status', '0', '0', '0', '1', '1', '1', '1', 'EQ', 'radio', '', 3, 'admin', '2024-07-06 08:55:32', '', '2024-07-06 09:11:28');
 INSERT INTO `gen_table_column` VALUES (67, 10, 'name', '提交者姓名', 'varchar(255)', 'String', 'name', '0', '0', '0', '1', '1', '1', '1', 'LIKE', 'input', '', 4, 'admin', '2024-07-06 08:55:32', '', '2024-07-06 09:11:28');
 INSERT INTO `gen_table_column` VALUES (68, 10, 'student_id', '提交者学号', 'varchar(255)', 'String', 'studentId', '0', '0', '0', '1', '1', '1', '1', 'EQ', 'input', '', 5, 'admin', '2024-07-06 08:55:32', '', '2024-07-06 09:11:28');
+INSERT INTO `gen_table_column` VALUES (69, 11, 'id', '车辆唯一标识', 'bigint', 'Long', 'id', '1', '1', '0', '1', NULL, NULL, NULL, 'EQ', 'input', '', 1, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (70, 11, 'name', '车型名称', 'varchar(100)', 'String', 'name', '0', '0', '1', '1', '1', '1', '1', 'LIKE', 'input', '', 2, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (71, 11, 'brand', '品牌名称', 'varchar(50)', 'String', 'brand', '0', '0', '1', '1', '1', '1', '1', 'EQ', 'input', '', 3, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (72, 11, 'price', '指导价', 'decimal(12,2)', 'BigDecimal', 'price', '0', '0', '1', '1', '1', '1', '1', 'EQ', 'input', '', 4, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (73, 11, 'battery_type', '电池类型', 'int', 'Long', 'batteryType', '0', '0', '1', '1', '1', '1', '1', 'EQ', 'select', '', 5, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (74, 11, 'range_km', '续航里程(km)', 'int', 'Long', 'rangeKm', '0', '0', '0', '1', '1', '1', '1', 'EQ', 'input', '', 6, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (75, 11, 'stock', '库存数量', 'int', 'Long', 'stock', '0', '0', '0', '1', '1', '1', '1', 'EQ', 'input', '', 7, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (76, 11, 'launch_date', '上市时间', 'date', 'Date', 'launchDate', '0', '0', '0', '1', '1', '1', '1', 'EQ', 'datetime', '', 8, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (77, 11, 'config_json', '配置参数(快充、智驾等JSON)', 'text', 'String', 'configJson', '0', '0', '0', '1', '1', '1', '1', 'EQ', 'textarea', '', 9, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (78, 11, 'description', '车辆详情描述', 'text', 'String', 'description', '0', '0', '0', '1', '1', '1', '1', 'EQ', 'textarea', '', 10, 'admin', '2026-01-19 23:33:38', '', NULL);
+INSERT INTO `gen_table_column` VALUES (79, 11, 'image_url', '车辆封面图片路径', 'varchar(255)', 'String', 'imageUrl', '0', '0', '0', '1', '1', '1', '1', 'EQ', 'input', '', 11, 'admin', '2026-01-19 23:33:38', '', NULL);
 
 -- ----------------------------
 -- Table structure for mes_device_information
@@ -1163,7 +1348,7 @@ CREATE TABLE `sys_logininfor`  (
   PRIMARY KEY (`info_id`) USING BTREE,
   INDEX `idx_sys_logininfor_s`(`status` ASC) USING BTREE,
   INDEX `idx_sys_logininfor_lt`(`login_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 302 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统访问记录' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 304 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统访问记录' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_logininfor
@@ -1370,6 +1555,8 @@ INSERT INTO `sys_logininfor` VALUES (298, 'admin', '127.0.0.1', '内网IP', 'Chr
 INSERT INTO `sys_logininfor` VALUES (299, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-18 13:24:53');
 INSERT INTO `sys_logininfor` VALUES (300, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-18 19:54:25');
 INSERT INTO `sys_logininfor` VALUES (301, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-18 21:26:20');
+INSERT INTO `sys_logininfor` VALUES (302, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-19 23:29:31');
+INSERT INTO `sys_logininfor` VALUES (303, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-20 00:08:10');
 
 -- ----------------------------
 -- Table structure for sys_menu
@@ -1576,7 +1763,7 @@ CREATE TABLE `sys_oper_log`  (
   INDEX `idx_sys_oper_log_bt`(`business_type` ASC) USING BTREE,
   INDEX `idx_sys_oper_log_s`(`status` ASC) USING BTREE,
   INDEX `idx_sys_oper_log_ot`(`oper_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 484 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志记录' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 487 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志记录' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -1965,6 +2152,9 @@ INSERT INTO `sys_oper_log` VALUES (480, '菜单管理', 1, 'com.ruoyi.web.contro
 INSERT INTO `sys_oper_log` VALUES (481, '菜单管理', 1, 'com.ruoyi.web.controller.system.SysMenuController.add()', 'POST', 1, 'admin', '软件工程', '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"createBy\":\"admin\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuName\":\"新增\",\"menuType\":\"F\",\"orderNum\":20,\"params\":{},\"parentId\":2046,\"perms\":\"carsale:carorder:add\",\"status\":\"0\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-18 13:27:34', 287);
 INSERT INTO `sys_oper_log` VALUES (482, '菜单管理', 3, 'com.ruoyi.web.controller.system.SysMenuController.remove()', 'DELETE', 1, 'admin', '软件工程', '/system/menu/2048', '127.0.0.1', '内网IP', '{}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-18 13:27:41', 130);
 INSERT INTO `sys_oper_log` VALUES (483, '菜单管理', 2, 'com.ruoyi.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', '软件工程', '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"carsale/carOrder/index\",\"createTime\":\"2026-01-15 21:59:02\",\"icon\":\"build\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2046,\"menuName\":\"用户购车数据\",\"menuType\":\"C\",\"orderNum\":1,\"params\":{},\"parentId\":2045,\"path\":\"carOrder\",\"perms\":\"carsale:carorder:list\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-18 13:28:37', 14);
+INSERT INTO `sys_oper_log` VALUES (484, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"CREATE TABLE `carsale_vehicle`  (\\n  `id` bigint NOT NULL AUTO_INCREMENT COMMENT \'车辆唯一标识\',\\n  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT \'车型名称\',\\n  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT \'品牌名称\',\\n  `price` decimal(12, 2) NOT NULL COMMENT \'指导价\',\\n  `battery_type` int NOT NULL COMMENT \'电池类型\',\\n  `range_km` int NULL DEFAULT NULL COMMENT \'续航里程(km)\',\\n  `stock` int NULL DEFAULT 0 COMMENT \'库存数量\',\\n  `launch_date` date NULL DEFAULT NULL COMMENT \'上市时间\',\\n  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'配置参数(快充、智驾等JSON)\',\\n  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'车辆详情描述\',\\n  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT \'车辆封面图片路径\',\\n  PRIMARY KEY (`id`) USING BTREE\\n) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = \'车辆信息基础表\' ROW_FORMAT = Dynamic;\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-19 23:31:48', 109);
+INSERT INTO `sys_oper_log` VALUES (485, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"CREATE TABLE `carsale_vehicle`  (\\n  `id` bigint NOT NULL AUTO_INCREMENT COMMENT \'车辆唯一标识\',\\n  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT \'车型名称\',\\n  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT \'品牌名称\',\\n  `price` decimal(12, 2) NOT NULL COMMENT \'指导价\',\\n  `battery_type` int NOT NULL COMMENT \'电池类型\',\\n  `range_km` int NULL DEFAULT NULL COMMENT \'续航里程(km)\',\\n  `stock` int NULL DEFAULT 0 COMMENT \'库存数量\',\\n  `launch_date` date NULL DEFAULT NULL COMMENT \'上市时间\',\\n  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'配置参数(快充、智驾等JSON)\',\\n  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'车辆详情描述\',\\n  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT \'车辆封面图片路径\',\\n  PRIMARY KEY (`id`) USING BTREE\\n) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = \'车辆信息基础表\' ROW_FORMAT = Dynamic;\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-19 23:33:10', 21);
+INSERT INTO `sys_oper_log` VALUES (486, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"CREATE TABLE `vehicle` (\\n  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT \'车辆唯一标识\',\\n  `name` VARCHAR(100) NOT NULL COMMENT \'车型名称\',\\n  `brand` VARCHAR(50) NOT NULL COMMENT \'品牌名称\',\\n  `price` DECIMAL(12,2) NOT NULL COMMENT \'指导价\',\\n  `battery_type` INT NOT NULL COMMENT \'电池类型\',\\n  `range_km` INT DEFAULT NULL COMMENT \'续航里程(km)\',\\n  `stock` INT DEFAULT 0 COMMENT \'库存数量\',\\n  `launch_date` DATE DEFAULT NULL COMMENT \'上市时间\',\\n  `config_json` TEXT DEFAULT NULL COMMENT \'配置参数(快充、智驾等JSON)\',\\n  `description` TEXT DEFAULT NULL COMMENT \'车辆详情描述\',\\n  `image_url` VARCHAR(255) DEFAULT NULL COMMENT \'车辆封面图片路径\',\\n  PRIMARY KEY (`id`)\\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=\'车辆信息基础表\';\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-19 23:33:38', 145);
 
 -- ----------------------------
 -- Table structure for sys_post
@@ -2145,7 +2335,7 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 103, 'admin', '若依', '00', 'ry@163.com', '15888888888', '1', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '0', '127.0.0.1', '2026-01-18 21:26:20', 'admin', '2024-06-29 09:22:56', '', '2026-01-18 21:26:20', '管理员');
+INSERT INTO `sys_user` VALUES (1, 103, 'admin', '若依', '00', 'ry@163.com', '15888888888', '1', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '0', '127.0.0.1', '2026-01-20 00:08:10', 'admin', '2024-06-29 09:22:56', '', '2026-01-20 00:08:10', '管理员');
 INSERT INTO `sys_user` VALUES (2, 103, 'ry', '王老师', '00', 'ry@qq.com', '15666666666', '1', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '2', '127.0.0.1', '2024-06-29 09:22:56', 'admin', '2024-06-29 09:22:56', 'admin', '2024-07-03 11:56:45', '');
 INSERT INTO `sys_user` VALUES (100, NULL, 'test', 'test', '00', '', '', '0', '', '$2a$10$0V6b0uzM0kUGwIb.BCk1YekLyRy6KSE22Rxzm4Mx1nU1nBMz6kJ9u', '0', '2', '127.0.0.1', '2024-07-02 16:14:51', 'admin', '2024-06-29 09:50:41', '', '2024-07-02 16:14:51', NULL);
 INSERT INTO `sys_user` VALUES (101, NULL, 'sysAdmin', 'admin', '00', '', '', '0', '', '$2a$10$ROeTcvC9NicHhJIORm2q0.DjL31mi/9/S/Tl6hh78XvnUBUCFE60a', '0', '2', '127.0.0.1', '2024-07-03 10:56:07', 'admin', '2024-07-02 16:06:41', 'admin', '2024-07-03 10:56:06', NULL);
@@ -2197,6 +2387,29 @@ INSERT INTO `sys_user_role` VALUES (105, 102);
 INSERT INTO `sys_user_role` VALUES (106, 2);
 INSERT INTO `sys_user_role` VALUES (107, 102);
 INSERT INTO `sys_user_role` VALUES (108, 103);
+
+-- ----------------------------
+-- Table structure for vehicle
+-- ----------------------------
+DROP TABLE IF EXISTS `vehicle`;
+CREATE TABLE `vehicle`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of vehicle
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for wms_material
