@@ -19,7 +19,7 @@
     </resultMap>
 
     <sql id="selectVehicleVo">
-        select id, name, brand, price, battery_type, range_km, stock, launch_date, config_json, description, image_url from vehicle
+        select id, name, brand, price, battery_type, range_km, stock, launch_date, config_json, description, image_url from carsale_vehicle
     </sql>
 
     <select id="selectVehicleList" parameterType="Vehicle" resultMap="VehicleResult">
@@ -44,7 +44,7 @@
     </select>
 
     <insert id="insertVehicle" parameterType="Vehicle" useGeneratedKeys="true" keyProperty="id">
-        insert into vehicle
+        insert into carsale_vehicle
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="name != null and name != ''">name,</if>
             <if test="brand != null and brand != ''">brand,</if>
@@ -72,7 +72,7 @@
     </insert>
 
     <update id="updateVehicle" parameterType="Vehicle">
-        update vehicle
+        update carsale_vehicle
         <trim prefix="SET" suffixOverrides=",">
             <if test="name != null and name != ''">name = #{name},</if>
             <if test="brand != null and brand != ''">brand = #{brand},</if>
@@ -89,11 +89,11 @@
     </update>
 
     <delete id="deleteVehicleById" parameterType="Long">
-        delete from vehicle where id = #{id}
+        delete from carsale_vehicle where id = #{id}
     </delete>
 
     <delete id="deleteVehicleByIds" parameterType="String">
-        delete from vehicle where id in
+        delete from carsale_vehicle where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>
@@ -102,7 +102,7 @@
     <!-- 查找stock数量小于等于5的所有车辆信息 selectStockWarningList -->
     <select id="selectStockWarningList" resultMap="VehicleResult">
         select id, name, brand, price, battery_type, range_km, stock, launch_date, config_json, description, image_url
-        from vehicle
+        from carsale_vehicle
         where stock &lt;= 5
 
     </select>
