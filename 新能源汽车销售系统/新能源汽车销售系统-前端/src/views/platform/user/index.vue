@@ -1,6 +1,8 @@
 <template>
   <div class="app-container">
 
+
+
     <!-- 搜索栏 -->
     <!-- 属性解释   inline:行类表单  showSearch:显示搜索框 -->
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true"  v-show="showSearch" label-width="68px">

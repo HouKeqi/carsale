@@ -38,6 +38,25 @@ public class Vehicle extends BaseEntity {
     @Excel(name = "车辆价格")
     private double price;
 
+    private int priceOrder;
+    private int rangeKmOrder;
+
+    public int getPriceOrder() {
+        return priceOrder;
+    }
+
+    public void setPriceOrder(int priceOrder) {
+        this.priceOrder = priceOrder;
+    }
+
+    public int getRangeKmOrder() {
+        return rangeKmOrder;
+    }
+
+    public void setRangeKmOrder(int rangeKmOrder) {
+        this.rangeKmOrder = rangeKmOrder;
+    }
+
     public int getBatteryType() {
         return batteryType;
     }

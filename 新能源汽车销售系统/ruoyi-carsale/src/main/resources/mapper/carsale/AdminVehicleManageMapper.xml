@@ -22,6 +22,28 @@
         select id, name, brand, price, battery_type, range_km, stock, launch_date, config_json, description, image_url from carsale_vehicle
     </sql>
 
+    <!--
+查询车辆列表信息
+参数: Vehicle对象，包含查询条件
+返回值: VehicleResult映射的结果集
+-->
+
+<!--    <select id="selectVehicleList" parameterType="Vehicle" resultMap="VehicleResult">-->
+<!--        <include refid="selectVehicleVo"/>-->
+<!--        <where>-->
+<!--            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>-->
+<!--            <if test="brand != null  and brand != ''"> and brand = #{brand}</if>-->
+<!--            <if test="price != null "> and price = #{price}</if>-->
+<!--            <if test="batteryType != null "> and battery_type = #{batteryType}</if>-->
+<!--            <if test="rangeKm != null "> and range_km = #{rangeKm}</if>-->
+<!--            <if test="stock != null "> and stock = #{stock}</if>-->
+<!--            <if test="launchDate != null "> and launch_date = #{launchDate}</if>-->
+<!--            <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>-->
+<!--            <if test="description != null  and description != ''"> and description = #{description}</if>-->
+<!--            <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>-->
+<!--        </where>-->
+<!--    </select>-->
+
     <select id="selectVehicleList" parameterType="Vehicle" resultMap="VehicleResult">
         <include refid="selectVehicleVo"/>
         <where>
@@ -36,7 +58,115 @@
             <if test="description != null  and description != ''"> and description = #{description}</if>
             <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>
         </where>
+        ORDER BY
+        <choose>
+            <when test="priceOrder != null and priceOrder == 1">
+                price DESC
+            </when>
+            <otherwise>
+                price ASC
+            </otherwise>
+        </choose>,
+        <choose>
+            <when test="rangeKmOrder != null and rangeKmOrder == 1">
+                range_km DESC
+            </when>
+            <otherwise>
+                range_km ASC
+            </otherwise>
+        </choose>
     </select>
+
+
+
+
+
+
+
+    <!--    <select id="selectVehicleList_priceASC_rangekmDESC" parameterType="Vehicle" resultMap="VehicleResult">-->
+<!--        <include refid="selectVehicleVo"/>-->
+<!--        <where>-->
+<!--            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>-->
+<!--            <if test="brand != null  and brand != ''"> and brand = #{brand}</if>-->
+<!--            <if test="price != null "> and price = #{price}</if>-->
+<!--            <if test="batteryType != null "> and battery_type = #{batteryType}</if>-->
+<!--            <if test="rangeKm != null "> and range_km = #{rangeKm}</if>-->
+<!--            <if test="stock != null "> and stock = #{stock}</if>-->
+<!--            <if test="launchDate != null "> and launch_date = #{launchDate}</if>-->
+<!--            <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>-->
+<!--            <if test="description != null  and description != ''"> and description = #{description}</if>-->
+<!--            <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>-->
+<!--        </where>-->
+<!--        ORDER BY price ASC, range_km ASC-->
+<!--    </select>-->
+
+<!--    <select id="selectVehicleList_priceDESC_rangekmASC" parameterType="Vehicle" resultMap="VehicleResult">-->
+<!--        <include refid="selectVehicleVo"/>-->
+<!--        <where>-->
+<!--            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>-->
+<!--            <if test="brand != null  and brand != ''"> and brand = #{brand}</if>-->
+<!--            <if test="price != null "> and price = #{price}</if>-->
+<!--            <if test="batteryType != null "> and battery_type = #{batteryType}</if>-->
+<!--            <if test="rangeKm != null "> and range_km = #{rangeKm}</if>-->
+<!--            <if test="stock != null "> and stock = #{stock}</if>-->
+<!--            <if test="launchDate != null "> and launch_date = #{launchDate}</if>-->
+<!--            <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>-->
+<!--            <if test="description != null  and description != ''"> and description = #{description}</if>-->
+<!--            <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>-->
+<!--        </where>-->
+<!--        ORDER BY price DESC, range_km ASC-->
+<!--    </select>-->
+
+<!--    <select id="selectVehicleList_priceASC_rangekmDESC" parameterType="Vehicle" resultMap="VehicleResult">-->
+<!--        <include refid="selectVehicleVo"/>-->
+<!--        <where>-->
+<!--            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>-->
+<!--            <if test="brand != null  and brand != ''"> and brand = #{brand}</if>-->
+<!--            <if test="price != null "> and price = #{price}</if>-->
+<!--            <if test="batteryType != null "> and battery_type = #{batteryType}</if>-->
+<!--            <if test="rangeKm != null "> and range_km = #{rangeKm}</if>-->
+<!--            <if test="stock != null "> and stock = #{stock}</if>-->
+<!--            <if test="launchDate != null "> and launch_date = #{launchDate}</if>-->
+<!--            <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>-->
+<!--            <if test="description != null  and description != ''"> and description = #{description}</if>-->
+<!--            <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>-->
+<!--        </where>-->
+<!--        ORDER BY price ASC, range_km DESC-->
+<!--    </select>-->
+
+<!--    <select id="selectVehicleList_priceDESC_rangekmDESC" parameterType="Vehicle" resultMap="VehicleResult">-->
+<!--        <include refid="selectVehicleVo"/>-->
+<!--        <where>-->
+<!--            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>-->
+<!--            <if test="brand != null  and brand != ''"> and brand = #{brand}</if>-->
+<!--            <if test="price != null "> and price = #{price}</if>-->
+<!--            <if test="batteryType != null "> and battery_type = #{batteryType}</if>-->
+<!--            <if test="rangeKm != null "> and range_km = #{rangeKm}</if>-->
+<!--            <if test="stock != null "> and stock = #{stock}</if>-->
+<!--            <if test="launchDate != null "> and launch_date = #{launchDate}</if>-->
+<!--            <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>-->
+<!--            <if test="description != null  and description != ''"> and description = #{description}</if>-->
+<!--            <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>-->
+<!--        </where>-->
+<!--        ORDER BY price DESC, range_km DESC-->
+<!--    </select>-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <select id="selectVehicleById" parameterType="Long" resultMap="VehicleResult">
         <include refid="selectVehicleVo"/>

@@ -28,7 +28,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @date 2026-01-19
  */
 @RestController
-@RequestMapping("/carsale/admin/vehicle")
+@RequestMapping("/carsale")
 public class AdminVehicleManageController extends BaseController
 {
     @Autowired
@@ -39,13 +39,14 @@ public class AdminVehicleManageController extends BaseController
     /**
      * 查询车辆信息基础列表
      */
-    @GetMapping("/detail")
+    @GetMapping({"/admin/vehicle/detail","/vehicle/search","/vehicle/evaluations","/vehicle/brand/list","/vehicle/battery-type/list"})
     public TableDataInfo getVehicleList(Vehicle vehicle)
     {
         startPage();
         List<Vehicle> list = vehicleService.selectVehicleList(vehicle);
         return getDataTable(list);
     }
+
 
     /**
      * 导出车辆信息基础列表
@@ -61,7 +62,7 @@ public class AdminVehicleManageController extends BaseController
     /**
      * 获取车辆信息基础详细信息
      */
-    @GetMapping(value = "/detail/{id}")
+    @GetMapping(value = {"/admin/vehicle/detail/{id}","/vehicle/detail/{id}"})
     public AjaxResult getVehicleDetailInfo(@PathVariable("id") Long id)
     {
         return success(vehicleService.selectVehicleById(id));
@@ -70,7 +71,7 @@ public class AdminVehicleManageController extends BaseController
     /**
      * 新增车辆信息基础
      */
-    @PostMapping("/add")
+    @PostMapping("/admin/vehicle/add")
     public AjaxResult addVehicle(@RequestBody Vehicle vehicle)
     {
         return toAjax(vehicleService.insertVehicle(vehicle));
@@ -79,7 +80,7 @@ public class AdminVehicleManageController extends BaseController
     /**
      * 修改车辆信息基础
      */
-    @PutMapping("/update")
+    @PutMapping("/admin/vehicle/update")
     public AjaxResult updateVehicle(@RequestBody Vehicle vehicle)
     {
         return toAjax(vehicleService.updateVehicle(vehicle));
@@ -88,13 +89,13 @@ public class AdminVehicleManageController extends BaseController
     /**
      * 删除车辆信息基础
      */
-    @DeleteMapping("/delete/{ids}")
+    @DeleteMapping("/admin/vehicle/delete/{ids}")
     public AjaxResult deleteVehicle(@PathVariable Long[] ids)
     {
         return toAjax(vehicleService.deleteVehicleByIds(ids));
     }
 
-    @GetMapping("/stock/warning")
+    @GetMapping("/admin/vehicle/stock/warning")
     public TableDataInfo getStockWarningList(Vehicle vehicle) {
         startPage();
         List<Vehicle> list = vehicleService.selectStockWarningList(vehicle);
@@ -104,7 +105,7 @@ public class AdminVehicleManageController extends BaseController
     /**
      * 调整库存数量
      */
-    @PutMapping("/stock/update")
+    @PutMapping("/admin/vehicle/stock/update")
     public AjaxResult updateStock(@RequestBody Vehicle vehicle) {
         return toAjax(vehicleService.updateVehicle(vehicle));
     }

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.carsale.mapper.EvaluationMapper">
+    <!--
+    @Excel(name = "评价编号")
+    private Long id;
+    @Excel(name = "订单编号")
+    private Long orderId;
+    @Excel(name = "车辆编号")
+    private Long vehicleId;
+    @Excel(name = "评分")
+    private int score;
+    @Excel(name = "评价内容")
+    private String comment;
+    @Excel(name = "图片")
+    private String images;
+    @Excel(name = "评价时间")
+    private String create_Time;
+     -->
+
+    <resultMap id="EvaluationMap" type="Evaluation">
+        <result property="id" column="id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="vehicleId" column="vehicle_id"/>
+        <result property="score" column="score"/>
+        <result property="comment" column="comment"/>
+        <result property="images" column="images"/>
+        <result property="create_Time" column="create_time"/>
+    </resultMap>
+
+
+
+    <!-- 新增用户评价 -->
+    <insert id="insertEvaluation" parameterType="Evaluation">
+        insert into carsale_evaluation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="orderId != null">
+                order_id,
+            </if>
+            <if test="vehicleId != null">
+                vehicle_id,
+            </if>
+            <if test="score != null">
+                score,
+            </if>
+            <if test="comment != null">
+                comment,
+            </if>
+            <if test="images != null">
+                images,
+            </if>
+            <if test="create_Time != null">
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="orderId != null">
+                #{orderId},
+            </if>
+            <if test="vehicleId != null">
+                #{vehicleId},
+            </if>
+            <if test="score != null">
+                #{score},
+            </if>
+            <if test="comment != null">
+                #{comment},
+            </if>
+            <if test="images != null">
+                #{images},
+            </if>
+            <if test="create_Time != null">
+                #{create_Time},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 根据id删除评价  -->
+    <delete id="deleteEvaluationById" parameterType="Long">
+        delete from carsale_evaluation where id = #{id}
+    </delete>
+
+
+</mapper>
