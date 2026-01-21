@@ -59,9 +59,9 @@ public class OrdersController extends BaseController
     }
 
     // 删除
-    @DeleteMapping("/order/cancel")
-    public AjaxResult deleteOrder(@RequestBody Orders orders) {
-        return AjaxResult.success(OrdersService.deleteOrdersById(orders.getId()));
+    @DeleteMapping("/order/cancel/{id}")
+    public AjaxResult deleteOrder(@PathVariable("id") Long id) {
+        return AjaxResult.success(OrdersService.deleteOrdersById(id));
     }
 
 //

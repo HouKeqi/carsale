@@ -58,9 +58,9 @@ public class TestdriveController extends BaseController{
     }
 
     // 删除
-    @DeleteMapping("/test-drive/cancel")
-    public AjaxResult deleteTestdrive(@RequestBody Testdrive testdrive) {
-        return AjaxResult.success(TestdriveService.deleteTestdriveById(testdrive.getId()));
+    @DeleteMapping("/test-drive/cancel/{id}")
+    public AjaxResult deleteTestdrive(@PathVariable("id") Long id) {
+        return AjaxResult.success(TestdriveService.deleteTestdriveById(id));
     }
 
 

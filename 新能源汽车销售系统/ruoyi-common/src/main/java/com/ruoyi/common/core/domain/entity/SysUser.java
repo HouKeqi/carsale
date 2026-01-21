@@ -89,6 +89,56 @@ public class SysUser extends BaseEntity
     /** 角色ID */
     private Long roleId;
 
+    /** 真实姓名*/
+    @Excel(name = "真实姓名")
+    private String realName;
+
+    /** 收货/联系地址 */
+    @Excel(name = "收货/联系地址")
+    private String address;
+
+    /** 角色 */
+    @Excel(name = "角色")
+    private String role;
+
+    /** 身份证号 */
+    @Excel(name = "身份证号")
+    private String idCard;
+
+    public String getIdCard() {
+        return idCard;
+    }
+
+    public void setIdCard(String idCard) {
+        this.idCard = idCard;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+
+
     public SysUser()
     {
 
@@ -296,6 +346,8 @@ public class SysUser extends BaseEntity
     {
         this.roleId = roleId;
     }
+
+
 
     @Override
     public String toString() {

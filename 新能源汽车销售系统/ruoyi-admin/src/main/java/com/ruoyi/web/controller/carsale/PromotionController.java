@@ -27,9 +27,9 @@ public class PromotionController extends BaseController {
     }
 
     // 删除评价
-    @DeleteMapping("/admin/promotion/delete")
-    public AjaxResult deletePromotion(@RequestBody Promotion promotion) {
-        return AjaxResult.success(promotionService.deletePromotionById(promotion.getId()));
+    @DeleteMapping("/admin/promotion/delete/{id}")
+    public AjaxResult deletePromotion(@PathVariable("id") Long id) {
+        return AjaxResult.success(promotionService.deletePromotionById(id));
     }
 
     // 批量删除评价
@@ -39,14 +39,14 @@ public class PromotionController extends BaseController {
     }
 
     // 通过id查询评价
-    @GetMapping("/admin/promotion/detail")
-    public AjaxResult selectPromotionById(@RequestBody Promotion promotion) {
-        return AjaxResult.success(promotionService.selectPromotionById(promotion.getId()));
+    @GetMapping("/admin/promotion/detail/{id}")
+    public AjaxResult selectPromotionById(@PathVariable("id") Long id) {
+        return AjaxResult.success(promotionService.selectPromotionById(id));
     }
 
     // 查询评价列表
     @GetMapping("/admin/promotion/page")
-    public AjaxResult selectPromotionList(@RequestBody Promotion promotion) {
+    public AjaxResult selectPromotionList(Promotion promotion) {
         return AjaxResult.success(promotionService.selectPromotionList(promotion));
     }
 
