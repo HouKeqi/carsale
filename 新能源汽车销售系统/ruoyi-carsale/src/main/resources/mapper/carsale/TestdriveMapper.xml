@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.carsale.mapper.TestdriveMapper">
+
+    <!--
+    @Excel(name = "预约编号")
+    private Long id;
+    @Excel(name = "用户编号")
+    private Long userId;
+    @Excel(name = "车辆编号")
+    private Long vehicleId;
+    @Excel(name = "门店名称")
+    private String storeName;
+    @Excel(name = "预约时间")
+    private String appointTime;
+    @Excel(name = "预约状态")
+    private int status;
+     -->
+
+
+    <resultMap id="TestdriveMap" type="Testdrive">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="vehicleId" column="vehicle_id"/>
+        <result property="storeName" column="store_name"/>
+        <result property="appointTime" column="appoint_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- 新增用户试驾 -->
+    <insert id="insertTestdrive" parameterType="Testdrive">
+        insert into carsale_test_drive
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="vehicleId != null">
+                vehicle_id,
+            </if>
+            <if test="storeName != null">
+                store_name,
+            </if>
+            <if test="appointTime != null">
+                appoint_time,
+            </if>
+                <if test="status != null">
+                status,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="vehicleId != null">
+                #{vehicleId},
+            </if>
+            <if test="storeName != null">
+                #{storeName},
+            </if>
+            <if test="appointTime != null">
+                #{appointTime},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 修改用户试驾 -->
+    <update id="updateTestdrive" parameterType="Testdrive">
+        update carsale_test_drive
+        <set>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="vehicleId != null">
+                vehicle_id = #{vehicleId},
+            </if>
+            <if test="storeName != null">
+                store_name = #{storeName},
+            </if>
+            <if test="appointTime != null">
+                appoint_time = #{appointTime},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 删除用户试驾 -->
+    <delete id="deleteTestdriveById" parameterType="Long">
+        delete from carsale_test_drive where id = #{id}
+    </delete>
+
+    <!-- 批量删除用户试驾 -->
+    <delete id="deleteTestdriveByIds" parameterType="Long">
+        delete from carsale_test_drive where id in
+        <foreach item="id" collection="array" separator="," close=")" open="(" index="">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据id查询用户试驾 -->
+    <select id="selectTestdriveById" parameterType="Long" resultMap="TestdriveMap">
+        select id,user_id,vehicle_id,store_name,appoint_time,status
+        from carsale_test_drive
+        where id = #{id}
+    </select>
+
+    <!-- 获取用户试驾列表 -->
+    <select id="selectTestdriveList" parameterType="Testdrive" resultMap="TestdriveMap">
+        select id,user_id,vehicle_id,store_name,appoint_time,status
+        from carsale_test_drive
+        <where>
+            <if test="id != null">         and id = #{id}             </if>
+            <if test="userId != null">     and user_id = #{userId}        </if>
+            <if test="vehicleId != null">  and vehicle_id = #{vehicleId}  </if>
+            <if test="storeName != null">      and store_name = #{storeName}          </if>
+            <if test="appointTime != null">      and appoint_time = #{appointTime}          </if>
+            <if test="status != null">      and status = #{status}          </if>
+        </where>
+    </select>
+
+
+
+</mapper>
