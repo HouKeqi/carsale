@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.carsale.mapper.PromotionMapper">
+    <!--
+
+        @Excel(name = "活动编号")
+        private Long id;
+        @Excel(name = "活动名称")
+        private String title;
+        @Excel(name = "关联车型")
+        private Long vehicleId;
+        @Excel(name = "优惠类型")
+        private int discountType;
+        @Excel(name = "优惠金额")
+        private double discountValue;
+        @Excel(name = "有效期开始时间")
+        private String startTime;
+        @Excel(name = "有效期结束时间")
+        private String endTime;
+   -->
+
+    <resultMap id="PromotionMap" type="Promotion">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="vehicleId" column="vehicle_id"/>
+        <result property="discountType" column="discount_type"/>
+        <result property="discountValue" column="discount_value"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+    </resultMap>
+
+    <!-- 新增活动 -->
+    <insert id="insertPromotion" parameterType="Promotion">
+        insert into carsale_promotion
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="title != null">
+                title,
+            </if>
+            <if test="vehicleId != null">
+                vehicle_id,
+            </if>
+            <if test="discountType != null">
+                discount_type,
+            </if>
+            <if test="discountValue != null">
+                discount_value,
+            </if>
+            <if test="startTime != null">
+                start_time,
+            </if>
+            <if test="endTime != null"></if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id},
+                </if>
+                <if test="title != null">
+                    #{title},
+                </if>
+                <if test="vehicleId != null">
+                    #{vehicleId},
+                </if>
+                <if test="discountType != null">
+                    #{discountType},
+                </if>
+                <if test="discountValue != null">
+                    #{discountValue},
+                </if>
+                <if test="startTime != null">
+                    #{startTime},
+                </if>
+                <if test="endTime != null">
+                    #{endTime},
+                </if>
+        </trim>
+    </insert>
+
+    <!-- 修改活动 -->
+    <update id="updatePromotion" parameterType="Promotion">
+        update carsale_promotion
+        <set>
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="vehicleId != null">
+                vehicle_id = #{vehicleId},
+            </if>
+            <if test="discountType != null">
+                discount_type = #{discountType},
+            </if>
+            <if test="discountValue != null">
+                discount_value = #{discountValue},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime},
+            </if>
+            <if test="endTime != null">
+                end_time = #{endTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 删除活动 -->
+    <delete id="deletePromotionById" parameterType="Long">
+        delete from carsale_promotion where id = #{id}
+    </delete>
+
+    <!-- 批量删除活动 -->
+    <delete id="deletePromotionByIds" parameterType="Long">
+        delete from carsale_promotion where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据id查询活动 -->
+    <select id="selectPromotionById" parameterType="Long" resultMap="PromotionMap">
+        select id, title, vehicle_id, discount_type, discount_value, start_time, end_time
+        from carsale_promotion where id = #{id}
+    </select>
+
+    <!-- 查询活动列表 -->
+    <select id="selectPromotionList" parameterType="Promotion" resultMap="PromotionMap">
+        select id, title, vehicle_id, discount_type, discount_value, start_time, end_time
+        from carsale_promotion
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="title != null">
+                and title = #{title}
+            </if>
+            <if test="vehicleId != null">
+                and vehicle_id = #{vehicleId}
+            </if>
+            <if test="discountType != null">
+                and discount_type = #{discountType}
+            </if>
+            <if test="discountValue != null">
+                and discount_value = #{discountValue}
+            </if>
+            <if test="startTime != null">
+                and start_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and end_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.carsale.mapper.OrdersMapper">
+
+    <!--
+     public class Orders extends BaseEntity {
+    @Excel(name = "订单编号")
+    private Long id;
+    @Excel(name = "用户编号")
+    private Long userId;
+    @Excel(name = "车辆编号")
+    private Long vehicleId;
+    @Excel(name = "订单状态")
+    private int status;
+    @Excel(name = "成交金额")
+    private double amount;
+    @Excel(name = "购车数量")
+    private int number;
+    @Excel(name = "联系方式")
+    private String phone;
+    @Excel(name = "提车门店")
+    private String storeLocation;
+    @Excel(name = "下单时间")
+    private String create_Time;
+    @Excel(name = "支付完成时间")
+    private String payTime;
+     -->
+
+    <resultMap id="OrdersMap" type="Orders">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="vehicleId" column="vehicle_id"/>
+        <result property="status" column="status"/>
+        <result property="amount" column="amount"/>
+        <result property="number" column="number"/>
+        <result property="phone" column="phone"/>
+        <result property="storeLocation" column="store_location"/>
+        <result property="create_Time" column="create_time"/>
+        <result property="payTime" column="pay_time"/>
+    </resultMap>
+
+    <!-- 新增用户购车 -->
+    <insert id="insertOrders" parameterType="Orders">
+        insert into orders
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="vehicleId != null">
+                vehicle_id,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="amount != null">
+                amount,
+            </if>
+            <if test="number != null">
+                number,
+            </if>
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="storeLocation != null">
+                store_location,
+            </if>
+            <if test="create_Time != null">
+                create_time,
+            </if>
+            <if test="payTime != null">
+                pay_time,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id},
+            </if>
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="vehicleId != null">
+                #{vehicleId},
+            </if>
+            <if test="status != null">
+                #{status},
+            </if>
+            <if test="amount != null">
+                #{amount},
+            </if>
+            <if test="number != null">
+                #{number},
+            </if>
+            <if test="phone != null">
+                #{phone},
+            </if>
+            <if test="storeLocation != null">
+                #{storeLocation},
+            </if>
+            <if test="create_Time != null">
+                #{create_Time},
+            </if>
+            <if test="payTime != null">
+                #{payTime},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 修改用户购车 -->
+    <update id="updateOrders" parameterType="Orders">
+        update carsale_orders
+        <set>
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="vehicleId != null">
+                vehicle_id = #{vehicleId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="amount != null">
+                amount = #{amount},
+            </if>
+            <if test="number != null">
+                number = #{number},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="storeLocation != null">
+                store_location = #{storeLocation},
+            </if>
+            <if test="create_Time != null">
+                create_time = #{create_Time},
+            </if>
+            <if test="payTime != null">
+                pay_time = #{payTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 删除用户购车 -->
+    <delete id="deleteOrdersById" parameterType="Long">
+        delete from carsale_orders where id = #{id}
+    </delete>
+
+    <!-- 批量删除用户购车 -->
+    <delete id="deleteOrdersByIds" parameterType="Long">
+        delete from carsale_orders where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据id查询用户购车 -->
+    <select id="selectOrdersById" parameterType="Long" resultMap="OrdersMap">
+        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time
+        from carsale_orders
+        where id = #{id}
+    </select>
+
+    <!-- 查询用户购车列表 -->
+    <select id="selectOrdersList" parameterType="Orders" resultMap="OrdersMap">
+        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time
+        from carsale_orders
+        <where>
+            <if test="id != null">         and id = #{id}             </if>
+            <if test="userId != null">     and user_id = #{userId}        </if>
+            <if test="vehicleId != null">  and vehicle_id = #{vehicleId}  </if>
+            <if test="status != null">     and status = #{status}          </if>
+            <if test="amount != null">     and amount = #{amount}          </if>
+            <if test="number != null">     and number = #{number}          </if>
+            <if test="phone != null">      and phone = #{phone}          </if>
+            <if test="storeLocation != null">      and store_location = #{storeLocation}          </if>
+            <if test="create_Time != null">      and create_time = #{create_Time}          </if>
+            <if test="payTime != null">      and pay_time = #{payTime}          </if>
+        </where>
+    </select>
+
+
+</mapper>
