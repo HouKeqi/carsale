@@ -1,9 +1,10 @@
 package com.ruoyi.web.controller.carsale;
-
 import com.ruoyi.carsale.domain.CarsaleCarOrder;
+import com.ruoyi.carsale.domain.Testdrive;
 import com.ruoyi.carsale.domain.Vehicle;
 import com.ruoyi.carsale.service.IAdminVehicleManageService;
 import com.ruoyi.carsale.service.impl.OrdersServiceImpl;
+import com.ruoyi.carsale.service.impl.TestdriveServiceImpl;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.ruoyi.carsale.domain.Orders;
 
 
 /**
@@ -28,45 +28,42 @@ import com.ruoyi.carsale.domain.Orders;
  */
 @RestController
 @RequestMapping("/carsale")
-public class OrdersController extends BaseController
-{
+public class TestdriveController extends BaseController{
     @Autowired
-    private OrdersServiceImpl OrdersService;
+    private TestdriveServiceImpl TestdriveService;
 
     // 添加
-    @PostMapping("/order/create")
-    public AjaxResult addOrder(@RequestBody Orders orders) {
-        return AjaxResult.success(OrdersService.insertOrders(orders));
+    @PostMapping("/test-drive/apply")
+    public AjaxResult addTestdrive(@RequestBody Testdrive testdrive) {
+        return AjaxResult.success(TestdriveService.insertTestdrive(testdrive));
     }
 
     // 查询
-    @GetMapping({"/order/detail", "/admin/order/page","/admin/order/detail","/order/my/page"})
-    public TableDataInfo getOrderList(Orders orders) {
+    @GetMapping({"/admin/test-drive/page","/admin/test-drive/detail","/test-drive/my/page"})
+    public TableDataInfo getTestdriveList(Testdrive testdrive) {
 
         // 开启分页，其实调用的是父类方法，即 super.startPage();
         startPage();
 
         // 注意这里返回列表，所以我命名为 carsaleCarOrders，加了“s"
-        List<Orders> ordersList = this.OrdersService.selectOrdersList(orders);
+        List<Testdrive> testdriveList = this.TestdriveService.selectTestdriveList(testdrive);
 
-        return getDataTable(ordersList);
+        return getDataTable(testdriveList);
     }
 
     // 修改
-    @PutMapping("/admin/order/status/update")
-    public AjaxResult updateOrder(@RequestBody Orders orders) {
-        return AjaxResult.success(OrdersService.updateOrders(orders));
+    @PutMapping("/admin/test-drive/audit")
+    public AjaxResult updateTestdrive(@RequestBody Testdrive testdrive) {
+        return AjaxResult.success(TestdriveService.updateTestdrive(testdrive));
     }
 
     // 删除
-    @DeleteMapping("/order/cancel/{id}")
-    public AjaxResult deleteOrder(@PathVariable("id") Long id) {
-        return AjaxResult.success(OrdersService.deleteOrdersById(id));
+    @DeleteMapping("/test-drive/cancel/{id}")
+    public AjaxResult deleteTestdrive(@PathVariable("id") Long id) {
+        return AjaxResult.success(TestdriveService.deleteTestdriveById(id));
     }
 
-//
+
 
 }
-
-
 

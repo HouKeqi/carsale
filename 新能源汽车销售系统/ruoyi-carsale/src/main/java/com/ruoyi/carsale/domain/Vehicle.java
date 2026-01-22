@@ -27,6 +27,8 @@ MODIFY COLUMN `phone` VARCHAR(20) NULL DEFAULT NULL;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 
+import java.math.BigDecimal;
+
 public class Vehicle extends BaseEntity {
 
     @Excel(name = "车辆编号")
@@ -37,25 +39,56 @@ public class Vehicle extends BaseEntity {
     private String brand;
     @Excel(name = "车辆价格")
     private double price;
+    @Excel(name = "电池类型")
+    private int batteryType;
+    @Excel(name = "车辆续航里程")
+    private int rangeKm;
+    @Excel(name = "车辆库存")
+    private int stock;
+    @Excel(name = "车辆上架时间")
+    private String launchDate;
+    @Excel(name = "车辆配置")
+    private String configJson;
+    @Excel(name = "车辆描述")
+    private String description;
+    @Excel(name = "车辆图片")
+    private String imageUrl;
+    @Excel(name = "车辆最低价格")
+    private double minPrice; // 最小价格
+    @Excel(name = "车辆最高价格")
+    private double maxPrice; // 最大价格
+    @Excel(name = "车辆最低续航里程")
+    private int minRangeKm;  // 最小续航里程
+    @Excel(name = "车辆最高续航里程")
+    private int maxRangeKm;  // 最大续航里程
+    @Excel(name = "排序字段")
+    private String orderByColumn;  // 排序列名
+    @Excel(name = "排序方式")
+    private String isAsc;   // 升序/降序 (ASC/DESC)
 
-    private int priceOrder;
-    private int rangeKmOrder;
 
-    public int getPriceOrder() {
-        return priceOrder;
-    }
 
-    public void setPriceOrder(int priceOrder) {
-        this.priceOrder = priceOrder;
-    }
 
-    public int getRangeKmOrder() {
-        return rangeKmOrder;
-    }
 
-    public void setRangeKmOrder(int rangeKmOrder) {
-        this.rangeKmOrder = rangeKmOrder;
-    }
+
+//    private int priceOrder;    // 价格排序 0代表升序 1代表降序
+//    private int rangeKmOrder;   // 续航里程排序 0代表升序 1代表降序
+//
+//    public int getPriceOrder() {
+//        return priceOrder;
+//    }
+//
+//    public void setPriceOrder(int priceOrder) {
+//        this.priceOrder = priceOrder;
+//    }
+//
+//    public int getRangeKmOrder() {
+//        return rangeKmOrder;
+//    }
+//
+//    public void setRangeKmOrder(int rangeKmOrder) {
+//        this.rangeKmOrder = rangeKmOrder;
+//    }/**/
 
     public int getBatteryType() {
         return batteryType;
@@ -145,21 +178,53 @@ public class Vehicle extends BaseEntity {
         this.imageUrl = imageUrl;
     }
 
-    @Excel(name = "电池类型")
-    private int batteryType;
-    @Excel(name = "车辆续航里程")
-    private int rangeKm;
-    @Excel(name = "车辆库存")
-    private int stock;
-    @Excel(name = "车辆上架时间")
-    private String launchDate;
-    @Excel(name = "车辆配置")
-    private String configJson;
-    @Excel(name = "车辆描述")
-    private String description;
-    @Excel(name = "车辆图片")
-    private String imageUrl;
+    public double getMinPrice() {
+        return minPrice;
+    }
 
+    public void setMinPrice(double minPrice) {
+        this.minPrice = minPrice;
+    }
+
+    public double getMaxPrice() {
+        return maxPrice;
+    }
+
+    public void setMaxPrice(double maxPrice) {
+        this.maxPrice = maxPrice;
+    }
+
+    public int getMinRangeKm() {
+        return minRangeKm;
+    }
+
+    public void setMinRangeKm(int minRangeKm) {
+        this.minRangeKm = minRangeKm;
+    }
+
+    public int getMaxRangeKm() {
+        return maxRangeKm;
+    }
+
+    public void setMaxRangeKm(int maxRangeKm) {
+        this.maxRangeKm = maxRangeKm;
+    }
+
+    public String getOrderByColumn() {
+        return orderByColumn;
+    }
+
+    public void setOrderByColumn(String orderByColumn) {
+        this.orderByColumn = orderByColumn;
+    }
+
+    public String getIsAsc() {
+        return isAsc;
+    }
+
+    public void setIsAsc(String isAsc) {
+        this.isAsc = isAsc;
+    }
 }
 
 

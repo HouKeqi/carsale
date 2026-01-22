@@ -50,15 +50,6 @@ public class CarOrderController extends BaseController {
     public AjaxResult editCarOrder(@RequestBody CarsaleCarOrder carsaleCarOrder) {
         // 输出参数
 
-        System.out.println(carsaleCarOrder.getIntroduce());
-        System.out.println(carsaleCarOrder.getIntroduce());
-        System.out.println(carsaleCarOrder.getIntroduce());
-        System.out.println(carsaleCarOrder.getIntroduce());
-        System.out.println(carsaleCarOrder.getIntroduce());
-        System.out.println(carsaleCarOrder.getIntroduce());
-        System.out.println(carsaleCarOrder.getIntroduce());
-        System.out.println(carsaleCarOrder.getIntroduce());
-        System.out.println(carsaleCarOrder.getIntroduce());
 
 
         return AjaxResult.success(carOrderService.updateCarsaleCarOrder(carsaleCarOrder));

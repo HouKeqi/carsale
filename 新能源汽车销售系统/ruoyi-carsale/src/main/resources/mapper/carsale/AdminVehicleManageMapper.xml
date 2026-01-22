@@ -44,38 +44,110 @@
 <!--        </where>-->
 <!--    </select>-->
 
+<!--    <select id="selectVehicleList" parameterType="Vehicle" resultMap="VehicleResult">-->
+<!--        <include refid="selectVehicleVo"/>-->
+<!--        <where>-->
+<!--            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>-->
+<!--            <if test="brand != null  and brand != ''"> and brand = #{brand}</if>-->
+<!--            <if test="price != null "> and price = #{price}</if>-->
+<!--            <if test="batteryType != null "> and battery_type = #{batteryType}</if>-->
+<!--            <if test="rangeKm != null "> and range_km = #{rangeKm}</if>-->
+<!--            <if test="stock != null "> and stock = #{stock}</if>-->
+<!--            <if test="launchDate != null "> and launch_date = #{launchDate}</if>-->
+<!--            <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>-->
+<!--            <if test="description != null  and description != ''"> and description = #{description}</if>-->
+<!--            <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>-->
+<!--        </where>-->
+<!--        ORDER BY-->
+<!--        <choose>-->
+<!--            <when test="priceOrder != null and priceOrder == 1">-->
+<!--                price DESC-->
+<!--            </when>-->
+<!--            <otherwise>-->
+<!--                price ASC-->
+<!--            </otherwise>-->
+<!--        </choose>,-->
+<!--        <choose>-->
+<!--            <when test="rangeKmOrder != null and rangeKmOrder == 1">-->
+<!--                range_km DESC-->
+<!--            </when>-->
+<!--            <otherwise>-->
+<!--                range_km ASC-->
+<!--            </otherwise>-->
+<!--        </choose>-->
+<!--    </select>-->
+
     <select id="selectVehicleList" parameterType="Vehicle" resultMap="VehicleResult">
         <include refid="selectVehicleVo"/>
         <where>
             <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
             <if test="brand != null  and brand != ''"> and brand = #{brand}</if>
-            <if test="price != null "> and price = #{price}</if>
+            <if test="minPrice != null "> and price &gt;= #{minPrice}</if>
+            <if test="maxPrice != null "> and price &lt;= #{maxPrice}</if>
             <if test="batteryType != null "> and battery_type = #{batteryType}</if>
-            <if test="rangeKm != null "> and range_km = #{rangeKm}</if>
+            <if test="minRangeKm != null "> and range_km &gt;= #{minRangeKm}</if>
+            <if test="maxRangeKm != null "> and range_km &lt;= #{maxRangeKm}</if>
             <if test="stock != null "> and stock = #{stock}</if>
             <if test="launchDate != null "> and launch_date = #{launchDate}</if>
             <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>
             <if test="description != null  and description != ''"> and description = #{description}</if>
             <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>
         </where>
-        ORDER BY
         <choose>
-            <when test="priceOrder != null and priceOrder == 1">
-                price DESC
+            <when test="orderByColumn != null and orderByColumn == 'price'">
+                ORDER BY price ${isAsc}
+            </when>
+            <when test="orderByColumn != null and orderByColumn == 'rangeKm'">
+                ORDER BY range_km ${isAsc}
             </when>
             <otherwise>
-                price ASC
-            </otherwise>
-        </choose>,
-        <choose>
-            <when test="rangeKmOrder != null and rangeKmOrder == 1">
-                range_km DESC
-            </when>
-            <otherwise>
-                range_km ASC
+                ORDER BY id DESC
             </otherwise>
         </choose>
     </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

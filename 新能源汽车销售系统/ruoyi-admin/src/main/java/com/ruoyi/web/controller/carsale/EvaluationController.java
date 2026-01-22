@@ -5,10 +5,7 @@ import com.ruoyi.carsale.service.impl.EvaluationServiceImpl;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -24,9 +21,9 @@ public class EvaluationController extends BaseController{
     }
 
     // 根据id删除评价
-    @PostMapping("/evaluation/delete")
-    public AjaxResult deleteOrder(@RequestBody Evaluation evaluation) {
-        return AjaxResult.success(evaluationService.deleteEvaluationById(evaluation.getId()));
+    @PostMapping("/evaluation/delete/{id}")
+    public AjaxResult deleteOrder(@PathVariable("id") Long id) {
+        return AjaxResult.success(evaluationService.deleteEvaluationById(id));
     }
 
 
