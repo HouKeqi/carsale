@@ -82,12 +82,12 @@
         <where>
             <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
             <if test="brand != null  and brand != ''"> and brand = #{brand}</if>
-            <if test="minPrice != null "> and price &gt;= #{minPrice}</if>
-            <if test="maxPrice != null "> and price &lt;= #{maxPrice}</if>
-            <if test="batteryType != null "> and battery_type = #{batteryType}</if>
-            <if test="minRangeKm != null "> and range_km &gt;= #{minRangeKm}</if>
-            <if test="maxRangeKm != null "> and range_km &lt;= #{maxRangeKm}</if>
-            <if test="stock != null "> and stock = #{stock}</if>
+            <if test="minPrice != null"> and price &gt;= #{minPrice}</if>
+            <if test="maxPrice != null"> and price &lt;= #{maxPrice}</if>
+            <if test="batteryType != null"> and battery_type = #{batteryType}</if>
+            <if test="minRangeKm != null"> and range_km &gt;= #{minRangeKm}</if>
+            <if test="maxRangeKm != null"> and range_km &lt;= #{maxRangeKm}</if>
+            <if test="stock != null"> and stock = #{stock}</if>
             <if test="launchDate != null "> and launch_date = #{launchDate}</if>
             <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>
             <if test="description != null  and description != ''"> and description = #{description}</if>
@@ -247,30 +247,9 @@
 
     <insert id="insertVehicle" parameterType="Vehicle" useGeneratedKeys="true" keyProperty="id">
         insert into carsale_vehicle
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="name != null and name != ''">name,</if>
-            <if test="brand != null and brand != ''">brand,</if>
-            <if test="price != null">price,</if>
-            <if test="batteryType != null">battery_type,</if>
-            <if test="rangeKm != null">range_km,</if>
-            <if test="stock != null">stock,</if>
-            <if test="launchDate != null">launch_date,</if>
-            <if test="configJson != null">config_json,</if>
-            <if test="description != null">description,</if>
-            <if test="imageUrl != null">image_url,</if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="name != null and name != ''">#{name},</if>
-            <if test="brand != null and brand != ''">#{brand},</if>
-            <if test="price != null">#{price},</if>
-            <if test="batteryType != null">#{batteryType},</if>
-            <if test="rangeKm != null">#{rangeKm},</if>
-            <if test="stock != null">#{stock},</if>
-            <if test="launchDate != null">#{launchDate},</if>
-            <if test="configJson != null">#{configJson},</if>
-            <if test="description != null">#{description},</if>
-            <if test="imageUrl != null">#{imageUrl},</if>
-        </trim>
+        (name, brand, price, battery_type, range_km, stock, launch_date, config_json, description, image_url)
+        values
+        (#{name}, #{brand}, #{price}, #{batteryType}, #{rangeKm}, #{stock}, #{launchDate}, #{configJson}, #{description}, #{imageUrl})
     </insert>
 
     <update id="updateVehicle" parameterType="Vehicle">

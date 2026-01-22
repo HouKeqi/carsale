@@ -38,13 +38,13 @@ public class Vehicle extends BaseEntity {
     @Excel(name = "车辆品牌")
     private String brand;
     @Excel(name = "车辆价格")
-    private double price;
+    private Double price;
     @Excel(name = "电池类型")
-    private int batteryType;
+    private Integer batteryType;
     @Excel(name = "车辆续航里程")
-    private int rangeKm;
+    private Integer rangeKm;
     @Excel(name = "车辆库存")
-    private int stock;
+    private Integer stock;
     @Excel(name = "车辆上架时间")
     private String launchDate;
     @Excel(name = "车辆配置")
@@ -54,13 +54,13 @@ public class Vehicle extends BaseEntity {
     @Excel(name = "车辆图片")
     private String imageUrl;
     @Excel(name = "车辆最低价格")
-    private double minPrice; // 最小价格
+    private Double minPrice; // 最小价格
     @Excel(name = "车辆最高价格")
-    private double maxPrice; // 最大价格
+    private Double maxPrice; // 最大价格
     @Excel(name = "车辆最低续航里程")
-    private int minRangeKm;  // 最小续航里程
+    private Integer minRangeKm;  // 最小续航里程
     @Excel(name = "车辆最高续航里程")
-    private int maxRangeKm;  // 最大续航里程
+    private Integer maxRangeKm;  // 最大续航里程
     @Excel(name = "排序字段")
     private String orderByColumn;  // 排序列名
     @Excel(name = "排序方式")
@@ -90,11 +90,11 @@ public class Vehicle extends BaseEntity {
 //        this.rangeKmOrder = rangeKmOrder;
 //    }/**/
 
-    public int getBatteryType() {
+    public Integer getBatteryType() {
         return batteryType;
     }
 
-    public void setBatteryType(int batteryType) {
+    public void setBatteryType(Integer batteryType) {
         this.batteryType = batteryType;
     }
 
@@ -122,27 +122,27 @@ public class Vehicle extends BaseEntity {
         this.brand = brand;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
-    public int getRangeKm() {
+    public Integer getRangeKm() {
         return rangeKm;
     }
 
-    public void setRangeKm(int rangeKm) {
+    public void setRangeKm(Integer rangeKm) {
         this.rangeKm = rangeKm;
     }
 
-    public int getStock() {
+    public Integer getStock() {
         return stock;
     }
 
-    public void setStock(int stock) {
+    public void setStock(Integer stock) {
         this.stock = stock;
     }
 
@@ -178,35 +178,35 @@ public class Vehicle extends BaseEntity {
         this.imageUrl = imageUrl;
     }
 
-    public double getMinPrice() {
+    public Double getMinPrice() {
         return minPrice;
     }
 
-    public void setMinPrice(double minPrice) {
+    public void setMinPrice(Double minPrice) {
         this.minPrice = minPrice;
     }
 
-    public double getMaxPrice() {
+    public Double getMaxPrice() {
         return maxPrice;
     }
 
-    public void setMaxPrice(double maxPrice) {
+    public void setMaxPrice(Double maxPrice) {
         this.maxPrice = maxPrice;
     }
 
-    public int getMinRangeKm() {
+    public Integer getMinRangeKm() {
         return minRangeKm;
     }
 
-    public void setMinRangeKm(int minRangeKm) {
+    public void setMinRangeKm(Integer minRangeKm) {
         this.minRangeKm = minRangeKm;
     }
 
-    public int getMaxRangeKm() {
+    public Integer getMaxRangeKm() {
         return maxRangeKm;
     }
 
-    public void setMaxRangeKm(int maxRangeKm) {
+    public void setMaxRangeKm(Integer maxRangeKm) {
         this.maxRangeKm = maxRangeKm;
     }
 
