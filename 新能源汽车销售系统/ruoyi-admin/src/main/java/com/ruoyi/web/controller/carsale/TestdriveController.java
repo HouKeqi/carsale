@@ -1,69 +1,103 @@
 package com.ruoyi.web.controller.carsale;
-import com.ruoyi.carsale.domain.CarsaleCarOrder;
+
 import com.ruoyi.carsale.domain.Testdrive;
-import com.ruoyi.carsale.domain.Vehicle;
-import com.ruoyi.carsale.service.IAdminVehicleManageService;
-import com.ruoyi.carsale.service.impl.OrdersServiceImpl;
-import com.ruoyi.carsale.service.impl.TestdriveServiceImpl;
+import com.ruoyi.carsale.service.ITestdriveService;
+import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 /**
- * 车辆信息基础Controller
+ * 试驾预约管理Controller
  *
  * @author ruoyi
  * @date 2026-01-19
  */
 @RestController
 @RequestMapping("/carsale")
-public class TestdriveController extends BaseController{
+public class TestdriveController extends BaseController {
     @Autowired
-    private TestdriveServiceImpl TestdriveService;
+    private ITestdriveService testdriveService;
 
-    // 添加
-    @PostMapping("/test-drive/apply")
+    /**
+     * 普通用户创建试驾预约
+     */
+    @PreAuthorize("@ss.hasRole('customer')")
+    @PostMapping("/testdrive/create")
+    @Log(title = "试驾预约", businessType = BusinessType.INSERT)
     public AjaxResult addTestdrive(@RequestBody Testdrive testdrive) {
-        return AjaxResult.success(TestdriveService.insertTestdrive(testdrive));
+        // 自动设置当前登录用户ID
+        testdrive.setUserId(getUserId());
+        // 设置状态为待审核
+        if (testdrive.getStatus() == null) {
+            testdrive.setStatus(0);
+        }
+        return toAjax(testdriveService.insertTestdrive(testdrive));
     }
 
-    // 查询
-    @GetMapping({"/admin/test-drive/page","/admin/test-drive/detail","/test-drive/my/page"})
-    public TableDataInfo getTestdriveList(Testdrive testdrive) {
-
-        // 开启分页，其实调用的是父类方法，即 super.startPage();
+    /**
+     * 管理员查看所有试驾预约列表
+     */
+    @PreAuthorize("@ss.hasRole('admin')")
+    @GetMapping("/admin/testdrive/list")
+    public TableDataInfo getAdminTestdriveList(Testdrive testdrive) {
         startPage();
-
-        // 注意这里返回列表，所以我命名为 carsaleCarOrders，加了“s"
-        List<Testdrive> testdriveList = this.TestdriveService.selectTestdriveList(testdrive);
-
-        return getDataTable(testdriveList);
+        List<Testdrive> list = testdriveService.selectTestdriveList(testdrive);
+        return getDataTable(list);
     }
 
-    // 修改
-    @PutMapping("/admin/test-drive/audit")
-    public AjaxResult updateTestdrive(@RequestBody Testdrive testdrive) {
-        return AjaxResult.success(TestdriveService.updateTestdrive(testdrive));
+    /**
+     * 普通用户查看我的试驾预约列表
+     */
+    @PreAuthorize("@ss.hasRole('customer')")
+    @GetMapping("/testdrive/my/list")
+    public TableDataInfo getMyTestdriveList(Testdrive testdrive) {
+        startPage();
+        // 只查询当前用户的预约
+        testdrive.setUserId(getUserId());
+        List<Testdrive> list = testdriveService.selectTestdriveList(testdrive);
+        return getDataTable(list);
     }
 
-    // 删除
-    @DeleteMapping("/test-drive/cancel/{id}")
-    public AjaxResult deleteTestdrive(@PathVariable("id") Long id) {
-        return AjaxResult.success(TestdriveService.deleteTestdriveById(id));
+    /**
+     * 管理员审核试驾预约
+     */
+    @PreAuthorize("@ss.hasRole('admin')")
+    @PutMapping("/admin/testdrive/{id}/audit")
+    @Log(title = "试驾审核", businessType = BusinessType.UPDATE)
+    public AjaxResult auditTestdrive(@PathVariable("id") Long id, @RequestBody Testdrive testdrive) {
+        testdrive.setId(id);
+        // 设置审核时间
+        testdrive.setAuditTime(DateUtils.getTime());
+        return toAjax(testdriveService.updateTestdrive(testdrive));
     }
 
-
-
+    /**
+     * 普通用户取消试驾预约（仅待审核状态）
+     */
+    @PreAuthorize("@ss.hasRole('customer')")
+    @DeleteMapping("/testdrive/cancel/{id}")
+    @Log(title = "试驾预约", businessType = BusinessType.DELETE)
+    public AjaxResult cancelTestdrive(@PathVariable("id") Long id) {
+        Testdrive testdrive = testdriveService.selectTestdriveById(id);
+        if (testdrive == null) {
+            return AjaxResult.error("预约不存在");
+        }
+        // 验证预约是否属于当前用户
+        if (!testdrive.getUserId().equals(getUserId())) {
+            return AjaxResult.error("无权操作该预约");
+        }
+        // 只能取消待审核的预约
+        if (testdrive.getStatus() != null && testdrive.getStatus() != 0) {
+            return AjaxResult.error("只能取消待审核的预约");
+        }
+        return toAjax(testdriveService.deleteTestdriveById(id));
+    }
 }
-

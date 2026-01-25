@@ -29,55 +29,15 @@
         <result property="discountValue" column="discount_value"/>
         <result property="startTime" column="start_time"/>
         <result property="endTime" column="end_time"/>
+        <result property="status" column="status"/>
     </resultMap>
 
     <!-- 新增活动 -->
-    <insert id="insertPromotion" parameterType="Promotion">
+    <insert id="insertPromotion" parameterType="Promotion" useGeneratedKeys="true" keyProperty="id">
         insert into carsale_promotion
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                id,
-            </if>
-            <if test="title != null">
-                title,
-            </if>
-            <if test="vehicleId != null">
-                vehicle_id,
-            </if>
-            <if test="discountType != null">
-                discount_type,
-            </if>
-            <if test="discountValue != null">
-                discount_value,
-            </if>
-            <if test="startTime != null">
-                start_time,
-            </if>
-            <if test="endTime != null"></if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-                <if test="id != null">
-                    #{id},
-                </if>
-                <if test="title != null">
-                    #{title},
-                </if>
-                <if test="vehicleId != null">
-                    #{vehicleId},
-                </if>
-                <if test="discountType != null">
-                    #{discountType},
-                </if>
-                <if test="discountValue != null">
-                    #{discountValue},
-                </if>
-                <if test="startTime != null">
-                    #{startTime},
-                </if>
-                <if test="endTime != null">
-                    #{endTime},
-                </if>
-        </trim>
+        (title, vehicle_id, discount_type, discount_value, start_time, end_time, status)
+        values
+        (#{title}, #{vehicleId}, #{discountType}, #{discountValue}, #{startTime}, #{endTime}, #{status})
     </insert>
 
     <!-- 修改活动 -->
@@ -105,6 +65,9 @@
             <if test="endTime != null">
                 end_time = #{endTime},
             </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -124,20 +87,20 @@
 
     <!-- 根据id查询活动 -->
     <select id="selectPromotionById" parameterType="Long" resultMap="PromotionMap">
-        select id, title, vehicle_id, discount_type, discount_value, start_time, end_time
+        select id, title, vehicle_id, discount_type, discount_value, start_time, end_time, status
         from carsale_promotion where id = #{id}
     </select>
 
     <!-- 查询活动列表 -->
     <select id="selectPromotionList" parameterType="Promotion" resultMap="PromotionMap">
-        select id, title, vehicle_id, discount_type, discount_value, start_time, end_time
+        select id, title, vehicle_id, discount_type, discount_value, start_time, end_time, status
         from carsale_promotion
         <where>
             <if test="id != null">
                 and id = #{id}
             </if>
-            <if test="title != null">
-                and title = #{title}
+            <if test="title != null and title != ''">
+                and title like concat('%', #{title}, '%')
             </if>
             <if test="vehicleId != null">
                 and vehicle_id = #{vehicleId}
@@ -153,6 +116,9 @@
             </if>
             <if test="endTime != null">
                 and end_time &lt;= #{endTime}
+            </if>
+            <if test="status != null">
+                and status = #{status}
             </if>
         </where>
     </select>

@@ -22,6 +22,7 @@
 
     <resultMap id="EvaluationMap" type="Evaluation">
         <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
         <result property="orderId" column="order_id"/>
         <result property="vehicleId" column="vehicle_id"/>
         <result property="score" column="score"/>
@@ -33,53 +34,19 @@
 
 
     <!-- 新增用户评价 -->
-    <insert id="insertEvaluation" parameterType="Evaluation">
+    <insert id="insertEvaluation" parameterType="Evaluation" useGeneratedKeys="true" keyProperty="id">
         insert into carsale_evaluation
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                id,
-            </if>
-            <if test="orderId != null">
-                order_id,
-            </if>
-            <if test="vehicleId != null">
-                vehicle_id,
-            </if>
-            <if test="score != null">
-                score,
-            </if>
-            <if test="comment != null">
-                comment,
-            </if>
-            <if test="images != null">
-                images,
-            </if>
-            <if test="create_Time != null">
-                create_time,
-            </if>
+            user_id, order_id, vehicle_id, score,
+            <if test="comment != null">comment,</if>
+            <if test="images != null">images,</if>
+            <if test="create_Time != null">create_time,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                #{id},
-            </if>
-            <if test="orderId != null">
-                #{orderId},
-            </if>
-            <if test="vehicleId != null">
-                #{vehicleId},
-            </if>
-            <if test="score != null">
-                #{score},
-            </if>
-            <if test="comment != null">
-                #{comment},
-            </if>
-            <if test="images != null">
-                #{images},
-            </if>
-            <if test="create_Time != null">
-                #{create_Time},
-            </if>
+            #{userId}, #{orderId}, #{vehicleId}, #{score},
+            <if test="comment != null">#{comment},</if>
+            <if test="images != null">#{images},</if>
+            <if test="create_Time != null">#{create_Time},</if>
         </trim>
     </insert>
 
@@ -88,5 +55,25 @@
         delete from carsale_evaluation where id = #{id}
     </delete>
 
+    <!-- 根据id查询评价 -->
+    <select id="selectEvaluationById" parameterType="Long" resultMap="EvaluationMap">
+        select id, user_id, order_id, vehicle_id, score, comment, images, create_time
+        from carsale_evaluation
+        where id = #{id}
+    </select>
+
+    <!-- 查询评价列表 -->
+    <select id="selectEvaluationList" parameterType="Evaluation" resultMap="EvaluationMap">
+        select id, user_id, order_id, vehicle_id, score, comment, images, create_time
+        from carsale_evaluation
+        <where>
+            <if test="id != null"> and id = #{id} </if>
+            <if test="userId != null"> and user_id = #{userId} </if>
+            <if test="orderId != null"> and order_id = #{orderId} </if>
+            <if test="vehicleId != null"> and vehicle_id = #{vehicleId} </if>
+            <if test="score != null"> and score = #{score} </if>
+        </where>
+        order by create_time desc
+    </select>
 
 </mapper>

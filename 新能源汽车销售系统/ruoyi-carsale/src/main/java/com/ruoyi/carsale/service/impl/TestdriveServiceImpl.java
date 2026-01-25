@@ -1,7 +1,7 @@
 package com.ruoyi.carsale.service.impl;
 
 import com.ruoyi.carsale.domain.Testdrive;
-import com.ruoyi.carsale.mapper.OrdersMapper;
+import com.ruoyi.carsale.mapper.TestdriveMapper;
 import com.ruoyi.carsale.service.ITestdriveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public class TestdriveServiceImpl implements ITestdriveService {
     @Autowired
-    private TestdriveServiceImpl testdriveMapper;
+    private TestdriveMapper testdriveMapper;
 
     @Override
     public int insertTestdrive(Testdrive testdrive) {

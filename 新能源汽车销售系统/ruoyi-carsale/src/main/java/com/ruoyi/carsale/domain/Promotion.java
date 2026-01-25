@@ -27,13 +27,23 @@ public class Promotion extends BaseEntity {
     @Excel(name = "关联车型")
     private Long vehicleId;
     @Excel(name = "优惠类型")
-    private int discountType;
+    private Integer discountType;
     @Excel(name = "优惠金额")
-    private double discountValue;
+    private Double discountValue;
     @Excel(name = "有效期开始时间")
     private String startTime;
     @Excel(name = "有效期结束时间")
     private String endTime;
+    @Excel(name = "活动状态")
+    private Integer status;
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
 
     public Long getId() {
         return id;
@@ -59,19 +69,19 @@ public class Promotion extends BaseEntity {
         this.vehicleId = vehicleId;
     }
 
-    public int getDiscountType() {
+    public Integer getDiscountType() {
         return discountType;
     }
 
-    public void setDiscountType(int discountType) {
+    public void setDiscountType(Integer discountType) {
         this.discountType = discountType;
     }
 
-    public double getDiscountValue() {
+    public Double getDiscountValue() {
         return discountValue;
     }
 
-    public void setDiscountValue(double discountValue) {
+    public void setDiscountValue(Double discountValue) {
         this.discountValue = discountValue;
     }
 

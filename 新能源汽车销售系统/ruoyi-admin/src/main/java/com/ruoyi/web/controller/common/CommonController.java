@@ -19,6 +19,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileUtils;
+import com.ruoyi.common.utils.oss.OssUtils;
 import com.ruoyi.framework.config.ServerConfig;
 
 /**
@@ -34,6 +35,9 @@ public class CommonController
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired
+    private OssUtils ossUtils;
 
     private static final String FILE_DELIMETER = ",";
 
@@ -77,20 +81,21 @@ public class CommonController
     {
         try
         {
-            // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
-            // 上传并返回新文件名称
-            String fileName = FileUploadUtils.upload(filePath, file);
-            String url = serverConfig.getUrl() + fileName;
+            // 使用OSS上传文件
+            String url = ossUtils.uploadFile(file);
+            // 提取文件名（从URL中获取最后一部分）
+            String fileName = url.substring(url.lastIndexOf("/") + 1);
+            String newFileName = FileUtils.getName(fileName);
             AjaxResult ajax = AjaxResult.success();
             ajax.put("url", url);
-            ajax.put("fileName", fileName);
-            ajax.put("newFileName", FileUtils.getName(fileName));
+            ajax.put("fileName", url); // 保持兼容性，返回完整URL
+            ajax.put("newFileName", newFileName);
             ajax.put("originalFilename", file.getOriginalFilename());
             return ajax;
         }
         catch (Exception e)
         {
+            log.error("文件上传失败", e);
             return AjaxResult.error(e.getMessage());
         }
     }
@@ -103,19 +108,17 @@ public class CommonController
     {
         try
         {
-            // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
             List<String> urls = new ArrayList<String>();
             List<String> fileNames = new ArrayList<String>();
             List<String> newFileNames = new ArrayList<String>();
             List<String> originalFilenames = new ArrayList<String>();
             for (MultipartFile file : files)
             {
-                // 上传并返回新文件名称
-                String fileName = FileUploadUtils.upload(filePath, file);
-                String url = serverConfig.getUrl() + fileName;
+                // 使用OSS上传文件
+                String url = ossUtils.uploadFile(file);
+                String fileName = url.substring(url.lastIndexOf("/") + 1);
                 urls.add(url);
-                fileNames.add(fileName);
+                fileNames.add(url); // 保持兼容性，返回完整URL
                 newFileNames.add(FileUtils.getName(fileName));
                 originalFilenames.add(file.getOriginalFilename());
             }
@@ -128,6 +131,7 @@ public class CommonController
         }
         catch (Exception e)
         {
+            log.error("批量文件上传失败", e);
             return AjaxResult.error(e.getMessage());
         }
     }

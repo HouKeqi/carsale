@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
-    <el-container>
+    <a-layout class="layout-wrapper">
       <!-- 侧边栏 -->
-      <el-aside width="240px" class="sidebar">
+      <a-layout-sider class="sidebar" :width="240" :collapsed="false">
         <div class="logo-container">
           <div class="logo">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -13,85 +13,170 @@
           </div>
           <h1 class="logo-text">新能源销售</h1>
         </div>
-        <el-menu
-          :default-active="activeMenu"
+        <a-menu
+          v-model:selectedKeys="selectedKeys"
           class="sidebar-menu"
-          router
-          background-color="transparent"
-          text-color="#6b7280"
-          active-text-color="#3b82f6"
-        >
-          <el-menu-item index="/">
-            <el-icon><House /></el-icon>
-            <span>车辆管理</span>
-          </el-menu-item>
-        </el-menu>
-      </el-aside>
+          mode="inline"
+          :items="menuItems"
+          @click="handleMenuClick"
+        />
+      </a-layout-sider>
 
       <!-- 主内容区 -->
-      <el-container class="main-container">
+      <a-layout class="main-container">
         <!-- 顶部导航栏 -->
-        <el-header class="header">
+        <a-layout-header class="header">
           <div class="header-left">
-            <el-breadcrumb separator="/">
-              <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-              <el-breadcrumb-item>{{ currentRouteName }}</el-breadcrumb-item>
-            </el-breadcrumb>
+            <a-breadcrumb>
+              <a-breadcrumb-item>
+                <router-link to="/">首页</router-link>
+              </a-breadcrumb-item>
+              <a-breadcrumb-item>{{ currentRouteName }}</a-breadcrumb-item>
+            </a-breadcrumb>
           </div>
           <div class="header-right">
             <div class="user-info">
-              <el-avatar :size="36" class="user-avatar">
+              <a-avatar :size="36" class="user-avatar">
                 {{ authStore.name?.charAt(0) || 'U' }}
-              </el-avatar>
+              </a-avatar>
               <span class="username">{{ authStore.name }}</span>
-              <el-dropdown @command="handleCommand">
-                <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-                  </el-dropdown-menu>
+              <a-dropdown>
+                <template #overlay>
+                  <a-menu @click="handleCommand">
+                    <a-menu-item key="logout">退出登录</a-menu-item>
+                  </a-menu>
                 </template>
-              </el-dropdown>
+                <DownOutlined class="dropdown-icon" />
+              </a-dropdown>
             </div>
           </div>
-        </el-header>
+        </a-layout-header>
 
         <!-- 主内容 -->
-        <el-main class="main-content">
+        <a-layout-content class="main-content">
           <router-view />
-        </el-main>
-      </el-container>
-    </el-container>
+        </a-layout-content>
+      </a-layout>
+    </a-layout>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { ElMessage } from 'element-plus'
-import { House, ArrowDown } from '@element-plus/icons-vue'
+import { message } from 'ant-design-vue'
+import { HomeOutlined, DownOutlined } from '@ant-design/icons-vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
-const activeMenu = computed(() => route.path)
+// 根据路径获取对应的菜单key（用于高亮）
+const getMenuKeyFromPath = (path) => {
+  // 如果是详情页面，高亮对应的列表页面菜单项
+  if (path === '/customer/vehicle/detail') {
+    return '/customer/vehicle/list'
+  } else if (path === '/customer/order/create' || path === '/customer/order/detail') {
+    return '/customer/order/my-list'
+  } else if (path === '/customer/evaluation/create') {
+    return '/customer/evaluation/my-list'
+  } else if (path === '/customer/testdrive/create' || path === '/customer/testdrive/detail') {
+    return '/customer/testdrive/my-list'
+  }
+  return path
+}
+
+const selectedKeys = ref([getMenuKeyFromPath(route.path)])
+
 const currentRouteName = computed(() => {
   const routeMap = {
-    '/': '车辆管理'
+    '/admin/vehicle': '车辆管理',
+    '/promotion': '促销管理',
+    '/admin/inventory': '库存管理',
+    '/admin/order': '订单管理',
+    '/admin/user': '用户管理',
+    '/admin/statistics': '数据统计',
+    '/admin/testdrive': '试驾审核',
+    '/admin/store': '门店管理',
+    '/customer/vehicle/list': '车辆浏览',
+    '/customer/order/my-list': '我的订单',
+    '/customer/evaluation/my-list': '我的评价',
+    '/customer/testdrive/my-list': '我的预约',
+    '/customer/profile': '个人中心'
   }
   return routeMap[route.path] || '首页'
 })
 
-const handleCommand = async (command) => {
-  if (command === 'logout') {
+// 根据用户角色显示菜单（这里简化处理，实际应该从后端获取）
+const menuItems = computed(() => {
+  // 假设从authStore获取用户角色，这里先显示所有菜单
+  // 实际应该根据用户角色动态生成
+  const isAdmin = authStore.roles?.includes('admin') || false
+  const isCustomer = authStore.roles?.includes('customer') || false
+  
+  const items = []
+  
+  if (isAdmin) {
+    items.push(
+      { key: '/admin/vehicle', icon: () => h(HomeOutlined), label: '车辆管理' },
+      { key: '/admin/inventory', icon: () => h(HomeOutlined), label: '库存管理' },
+      { key: '/admin/order', icon: () => h(HomeOutlined), label: '订单管理' },
+      { key: '/admin/user', icon: () => h(HomeOutlined), label: '用户管理' },
+      { key: '/promotion', icon: () => h(HomeOutlined), label: '促销管理' },
+      { key: '/admin/statistics', icon: () => h(HomeOutlined), label: '数据统计' },
+      { key: '/admin/testdrive', icon: () => h(HomeOutlined), label: '试驾审核' }
+    )
+  }
+  
+  if (isCustomer) {
+    items.push(
+      { key: '/customer/vehicle/list', icon: () => h(HomeOutlined), label: '车辆浏览' },
+      { key: '/customer/order/my-list', icon: () => h(HomeOutlined), label: '我的订单' },
+      { key: '/customer/evaluation/my-list', icon: () => h(HomeOutlined), label: '我的评价' },
+      { key: '/customer/testdrive/my-list', icon: () => h(HomeOutlined), label: '我的预约' },
+      { key: '/customer/profile', icon: () => h(HomeOutlined), label: '个人中心' }
+    )
+  }
+  
+  // 如果没有角色信息，默认显示所有菜单（开发阶段）
+  if (items.length === 0) {
+    return [
+      { key: '/vehicle', icon: () => h(HomeOutlined), label: '车辆管理' },
+      { key: '/admin/inventory', icon: () => h(HomeOutlined), label: '库存管理' },
+      { key: '/admin/order', icon: () => h(HomeOutlined), label: '订单管理' },
+      { key: '/admin/user', icon: () => h(HomeOutlined), label: '用户管理' },
+      { key: '/promotion', icon: () => h(HomeOutlined), label: '促销管理' },
+      { key: '/admin/statistics', icon: () => h(HomeOutlined), label: '数据统计' },
+      { key: '/admin/testdrive', icon: () => h(HomeOutlined), label: '试驾审核' },
+      { key: '/admin/store', icon: () => h(HomeOutlined), label: '门店管理' },
+      { key: '/customer/vehicle/list', icon: () => h(HomeOutlined), label: '车辆浏览' },
+      { key: '/customer/order/my-list', icon: () => h(HomeOutlined), label: '我的订单' },
+      { key: '/customer/evaluation/my-list', icon: () => h(HomeOutlined), label: '我的评价' },
+      { key: '/customer/testdrive/my-list', icon: () => h(HomeOutlined), label: '我的预约' },
+      { key: '/customer/profile', icon: () => h(HomeOutlined), label: '个人中心' }
+    ]
+  }
+  
+  return items
+})
+
+watch(() => route.path, (newPath) => {
+  selectedKeys.value = [getMenuKeyFromPath(newPath)]
+})
+
+const handleMenuClick = ({ key }) => {
+  router.push(key)
+}
+
+const handleCommand = async ({ key }) => {
+  if (key === 'logout') {
     try {
       await authStore.logout()
-      ElMessage.success('退出登录成功')
+      message.success('退出登录成功')
       router.push('/login')
     } catch (error) {
-      ElMessage.error('退出登录失败')
+      message.error('退出登录失败')
     }
   }
 }
@@ -104,6 +189,10 @@ const handleCommand = async (command) => {
   height: 100vh;
   display: flex;
   background: $bg-color;
+}
+
+.layout-wrapper {
+  height: 100vh;
 }
 
 // 侧边栏样式
@@ -155,8 +244,9 @@ const handleCommand = async (command) => {
 .sidebar-menu {
   border: none;
   padding: 16px 0;
+  background: transparent;
   
-  :deep(.el-menu-item) {
+  :deep(.ant-menu-item) {
     height: 48px;
     line-height: 48px;
     margin: 4px 12px;
@@ -168,7 +258,7 @@ const handleCommand = async (command) => {
       color: $primary-color;
     }
     
-    &.is-active {
+    &.ant-menu-item-selected {
       background: $primary-bg;
       color: $primary-color;
       font-weight: 500;
@@ -184,11 +274,6 @@ const handleCommand = async (command) => {
         background: $primary-color;
         border-radius: 0 3px 3px 0;
       }
-    }
-    
-    .el-icon {
-      font-size: 20px;
-      margin-right: 12px;
     }
   }
 }
@@ -219,14 +304,14 @@ const handleCommand = async (command) => {
 .header-left {
   flex: 1;
   
-  :deep(.el-breadcrumb) {
+  :deep(.ant-breadcrumb) {
     font-size: 14px;
     
-    .el-breadcrumb__inner {
+    .ant-breadcrumb-link {
       color: $text-secondary;
       font-weight: 400;
       
-      &.is-link {
+      a {
         color: $text-secondary;
         
         &:hover {
@@ -235,7 +320,11 @@ const handleCommand = async (command) => {
       }
     }
     
-    .el-breadcrumb__item:last-child .el-breadcrumb__inner {
+    .ant-breadcrumb-separator {
+      color: $text-secondary;
+    }
+    
+    .ant-breadcrumb-link:last-child {
       color: $text-primary;
       font-weight: 500;
     }

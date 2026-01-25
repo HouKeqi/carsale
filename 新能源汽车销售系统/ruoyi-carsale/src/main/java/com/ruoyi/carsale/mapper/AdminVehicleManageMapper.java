@@ -65,5 +65,13 @@ public interface AdminVehicleManageMapper
      * @return 车辆信息基础集合
      */
     List<Vehicle> selectStockWarningList(Vehicle vehicle);
+
+    /**
+     * 检查车辆是否有关联订单
+     *
+     * @param vehicleId 车辆ID
+     * @return 关联订单数量
+     */
+    int countOrdersByVehicleId(Long vehicleId);
 }
 

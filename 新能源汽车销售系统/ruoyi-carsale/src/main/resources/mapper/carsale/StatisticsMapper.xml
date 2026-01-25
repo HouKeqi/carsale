@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.carsale.mapper.StatisticsMapper">
+
+    <!-- 查询销量TOP5车型 -->
+    <select id="selectTop5Vehicles" parameterType="Map" resultType="Map">
+        SELECT
+            v.id,
+            v.name,
+            v.brand,
+            COUNT(o.id) as sales_count,
+            SUM(o.amount) as total_amount
+        FROM carsale_vehicle v
+        INNER JOIN carsale_orders o ON v.id = o.vehicle_id
+        WHERE o.status IN (1, 2, 3)
+        <if test="startTime != null and startTime != ''">
+            AND o.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND o.create_time &lt;= #{endTime}
+        </if>
+        GROUP BY v.id, v.name, v.brand
+        ORDER BY sales_count DESC
+        LIMIT 5
+    </select>
+
+    <!-- 统计销售额 -->
+    <select id="getSalesAmount" parameterType="Map" resultType="Double">
+        SELECT COALESCE(SUM(amount), 0) as total_amount
+        FROM carsale_orders
+        WHERE status IN (1, 2, 3)
+        <if test="startTime != null and startTime != ''">
+            AND create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND create_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <!-- 统计新增用户数 -->
+    <select id="getNewUsersCount" parameterType="Map" resultType="Integer">
+        SELECT COUNT(*) as user_count
+        FROM sys_user
+        WHERE del_flag = '0'
+        <if test="startTime != null and startTime != ''">
+            AND create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND create_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <!-- 统计品牌销售占比 -->
+    <select id="getBrandDistribution" parameterType="Map" resultType="Map">
+        SELECT
+            v.brand,
+            COUNT(o.id) as sales_count,
+            SUM(o.amount) as total_amount,
+            ROUND(COUNT(o.id) * 100.0 / (SELECT COUNT(*) FROM carsale_orders WHERE status IN (1, 2, 3)
+                <if test="startTime != null and startTime != ''">
+                    AND create_time &gt;= #{startTime}
+                </if>
+                <if test="endTime != null and endTime != ''">
+                    AND create_time &lt;= #{endTime}
+                </if>
+            ), 2) as percentage
+        FROM carsale_vehicle v
+        INNER JOIN carsale_orders o ON v.id = o.vehicle_id
+        WHERE o.status IN (1, 2, 3)
+        <if test="startTime != null and startTime != ''">
+            AND o.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND o.create_time &lt;= #{endTime}
+        </if>
+        GROUP BY v.brand
+        ORDER BY sales_count DESC
+    </select>
+
+    <!-- 统计续航里程销售占比 -->
+    <select id="getRangeDistribution" parameterType="Map" resultType="Map">
+        SELECT
+            CASE
+                WHEN v.range_km &lt; 400 THEN '&lt;400km'
+                WHEN v.range_km &gt;= 400 AND v.range_km &lt; 600 THEN '400-600km'
+                WHEN v.range_km &gt;= 600 AND v.range_km &lt; 800 THEN '600-800km'
+                ELSE '&gt;=800km'
+            END as range_category,
+            COUNT(o.id) as sales_count,
+            SUM(o.amount) as total_amount,
+            ROUND(COUNT(o.id) * 100.0 / (SELECT COUNT(*) FROM carsale_orders WHERE status IN (1, 2, 3)
+                <if test="startTime != null and startTime != ''">
+                    AND create_time &gt;= #{startTime}
+                </if>
+                <if test="endTime != null and endTime != ''">
+                    AND create_time &lt;= #{endTime}
+                </if>
+            ), 2) as percentage
+        FROM carsale_vehicle v
+        INNER JOIN carsale_orders o ON v.id = o.vehicle_id
+        WHERE o.status IN (1, 2, 3)
+        <if test="startTime != null and startTime != ''">
+            AND o.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND o.create_time &lt;= #{endTime}
+        </if>
+        GROUP BY range_category
+        ORDER BY sales_count DESC
+    </select>
+
+</mapper>

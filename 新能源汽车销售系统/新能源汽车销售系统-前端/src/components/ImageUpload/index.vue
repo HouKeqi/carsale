@@ -199,7 +199,14 @@ export default {
       separator = separator || ",";
       for (let i in list) {
         if (list[i].url) {
-          strs += list[i].url.replace(this.baseUrl, "") + separator;
+          // 如果是完整的URL（以http://或https://开头），直接使用
+          // 否则去掉baseUrl前缀
+          let url = list[i].url;
+          if (url.startsWith('http://') || url.startsWith('https://')) {
+            strs += url + separator;
+          } else {
+            strs += url.replace(this.baseUrl, "") + separator;
+          }
         }
       }
       return strs != '' ? strs.substr(0, strs.length - 1) : '';

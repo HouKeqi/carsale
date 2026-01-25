@@ -39,75 +39,27 @@
         <result property="storeLocation" column="store_location"/>
         <result property="create_Time" column="create_time"/>
         <result property="payTime" column="pay_time"/>
+        <result property="pickupTime" column="pickup_time"/>
     </resultMap>
 
     <!-- 新增用户购车 -->
     <insert id="insertOrders" parameterType="Orders">
-        insert into orders
+        insert into carsale_orders
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                id,
-            </if>
-            <if test="userId != null">
-                user_id,
-            </if>
-            <if test="vehicleId != null">
-                vehicle_id,
-            </if>
-            <if test="status != null">
-                status,
-            </if>
-            <if test="amount != null">
-                amount,
-            </if>
-            <if test="number != null">
-                number,
-            </if>
-            <if test="phone != null">
-                phone,
-            </if>
-            <if test="storeLocation != null">
-                store_location,
-            </if>
-            <if test="create_Time != null">
-                create_time,
-            </if>
-            <if test="payTime != null">
-                pay_time,
-            </if>
+            id, user_id, vehicle_id, status, amount, number,
+            <if test="phone != null">phone,</if>
+            <if test="storeLocation != null">store_location,</if>
+            <if test="create_Time != null">create_time,</if>
+            <if test="payTime != null">pay_time,</if>
+            <if test="pickupTime != null">pickup_time,</if>
         </trim>
-
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                #{id},
-            </if>
-            <if test="userId != null">
-                #{userId},
-            </if>
-            <if test="vehicleId != null">
-                #{vehicleId},
-            </if>
-            <if test="status != null">
-                #{status},
-            </if>
-            <if test="amount != null">
-                #{amount},
-            </if>
-            <if test="number != null">
-                #{number},
-            </if>
-            <if test="phone != null">
-                #{phone},
-            </if>
-            <if test="storeLocation != null">
-                #{storeLocation},
-            </if>
-            <if test="create_Time != null">
-                #{create_Time},
-            </if>
-            <if test="payTime != null">
-                #{payTime},
-            </if>
+            #{id}, #{userId}, #{vehicleId}, #{status}, #{amount}, #{number},
+            <if test="phone != null">#{phone},</if>
+            <if test="storeLocation != null">#{storeLocation},</if>
+            <if test="create_Time != null">#{create_Time},</if>
+            <if test="payTime != null">#{payTime},</if>
+            <if test="pickupTime != null">#{pickupTime},</if>
         </trim>
     </insert>
 
@@ -145,6 +97,9 @@
             <if test="payTime != null">
                 pay_time = #{payTime},
             </if>
+            <if test="pickupTime != null">
+                pickup_time = #{pickupTime},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -164,14 +119,14 @@
 
     <!-- 根据id查询用户购车 -->
     <select id="selectOrdersById" parameterType="Long" resultMap="OrdersMap">
-        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time
+        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time,pickup_time
         from carsale_orders
         where id = #{id}
     </select>
 
     <!-- 查询用户购车列表 -->
     <select id="selectOrdersList" parameterType="Orders" resultMap="OrdersMap">
-        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time
+        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time,pickup_time
         from carsale_orders
         <where>
             <if test="id != null">         and id = #{id}             </if>
@@ -184,6 +139,7 @@
             <if test="storeLocation != null">      and store_location = #{storeLocation}          </if>
             <if test="create_Time != null">      and create_time = #{create_Time}          </if>
             <if test="payTime != null">      and pay_time = #{payTime}          </if>
+            <if test="pickupTime != null">      and pickup_time = #{pickupTime}          </if>
         </where>
     </select>
 

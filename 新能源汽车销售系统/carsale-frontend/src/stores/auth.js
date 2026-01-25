@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { login as loginApi, logout as logoutApi, getInfo } from '@/api/auth'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { ElMessage } from 'element-plus'
+import { message } from 'ant-design-vue'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({

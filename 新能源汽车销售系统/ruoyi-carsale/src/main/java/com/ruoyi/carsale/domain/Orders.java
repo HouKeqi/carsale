@@ -32,11 +32,11 @@ public class Orders extends BaseEntity {
     @Excel(name = "车辆编号")
     private Long vehicleId;
     @Excel(name = "订单状态")
-    private int status;
+    private Integer status;
     @Excel(name = "成交金额")
-    private double amount;
+    private Double amount;
     @Excel(name = "购车数量")
-    private int number;
+    private Integer number;
     @Excel(name = "联系方式")
     private String phone;
     @Excel(name = "提车门店")
@@ -45,6 +45,16 @@ public class Orders extends BaseEntity {
     private String create_Time;
     @Excel(name = "支付完成时间")
     private String payTime;
+    @Excel(name = "提车时间")
+    private String pickupTime;
+
+    public String getPickupTime() {
+        return pickupTime;
+    }
+
+    public void setPickupTime(String pickupTime) {
+        this.pickupTime = pickupTime;
+    }
 
     public String getCreate_Time() {
         return create_Time;
@@ -78,27 +88,27 @@ public class Orders extends BaseEntity {
         this.vehicleId = vehicleId;
     }
 
-    public int getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
-    public double getAmount() {
+    public Double getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(Double amount) {
         this.amount = amount;
     }
 
-    public int getNumber() {
+    public Integer getNumber() {
         return number;
     }
 
-    public void setNumber(int number) {
+    public void setNumber(Integer number) {
         this.number = number;
     }
 

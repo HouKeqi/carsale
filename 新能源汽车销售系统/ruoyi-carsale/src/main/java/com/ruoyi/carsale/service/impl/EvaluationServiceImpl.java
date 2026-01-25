@@ -6,6 +6,8 @@ import com.ruoyi.carsale.service.IEvaluationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class EvaluationServiceImpl implements IEvaluationService {
 
@@ -20,5 +22,15 @@ public class EvaluationServiceImpl implements IEvaluationService {
     @Override
     public int deleteEvaluationById(Long id) {
         return evaluationMapper.deleteEvaluationById(id);
+    }
+
+    @Override
+    public Evaluation selectEvaluationById(Long id) {
+        return evaluationMapper.selectEvaluationById(id);
+    }
+
+    @Override
+    public List<Evaluation> selectEvaluationList(Evaluation evaluation) {
+        return evaluationMapper.selectEvaluationList(evaluation);
     }
 }

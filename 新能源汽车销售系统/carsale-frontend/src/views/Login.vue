@@ -1,87 +1,72 @@
 <template>
   <div class="login-container">
-    <el-form
+    <a-form
       ref="loginFormRef"
       :model="loginForm"
       :rules="loginRules"
       class="login-form"
-      auto-complete="on"
-      label-position="left"
+      @finish="handleLogin"
     >
       <div class="title-container">
         <h3 class="title">新能源汽车销售系统</h3>
       </div>
 
-      <el-form-item prop="username">
-        <el-input
-          ref="username"
-          v-model="loginForm.username"
+      <a-form-item name="username">
+        <a-input
+          v-model:value="loginForm.username"
           placeholder="用户名"
-          name="username"
-          type="text"
-          tabindex="1"
-          auto-complete="on"
+          size="large"
         >
           <template #prefix>
-            <el-icon><User /></el-icon>
+            <UserOutlined />
           </template>
-        </el-input>
-      </el-form-item>
+        </a-input>
+      </a-form-item>
 
-      <el-tooltip v-model:visible="capsTooltip" content="大写锁定已打开" placement="right" manual>
-        <el-form-item prop="password">
-          <el-input
-            :key="passwordType"
-            ref="passwordRef"
-            v-model="loginForm.password"
-            :type="passwordType"
-            placeholder="密码"
-            name="password"
-            tabindex="2"
-            auto-complete="on"
-            @keyup="checkCapslock"
-            @blur="capsTooltip = false"
-            @keyup.enter="handleLogin"
-          >
-            <template #prefix>
-              <el-icon><Lock /></el-icon>
-            </template>
-            <template #suffix>
-              <el-icon class="show-pwd" @click="showPwd">
-                <View v-if="passwordType === 'password'" />
-                <Hide v-else />
-              </el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-      </el-tooltip>
-
-      <el-form-item prop="code">
-        <el-input
-          v-model="loginForm.code"
-          auto-complete="off"
-          placeholder="验证码"
-          style="width: 63%"
+      <a-form-item name="password">
+        <a-input-password
+          v-model:value="loginForm.password"
+          placeholder="密码"
+          size="large"
           @keyup.enter="handleLogin"
         >
           <template #prefix>
-            <el-icon><Key /></el-icon>
+            <LockOutlined />
           </template>
-        </el-input>
-        <div class="login-code">
-          <img :src="codeUrl" class="login-code-img" @click="getCode" />
-        </div>
-      </el-form-item>
+        </a-input-password>
+      </a-form-item>
 
-      <el-button
-        :loading="loading"
-        type="primary"
-        style="width: 100%; margin-bottom: 30px"
-        @click.prevent="handleLogin"
-      >
-        登录
-      </el-button>
-    </el-form>
+      <a-form-item name="code">
+        <a-input-group compact>
+          <a-input
+            v-model:value="loginForm.code"
+            placeholder="验证码"
+            size="large"
+            style="width: calc(100% - 120px)"
+            @keyup.enter="handleLogin"
+          >
+            <template #prefix>
+              <KeyOutlined />
+            </template>
+          </a-input>
+          <div class="login-code">
+            <img :src="codeUrl" class="login-code-img" @click="getCode" />
+          </div>
+        </a-input-group>
+      </a-form-item>
+
+      <a-form-item>
+        <a-button
+          :loading="loading"
+          type="primary"
+          html-type="submit"
+          size="large"
+          block
+        >
+          登录
+        </a-button>
+      </a-form-item>
+    </a-form>
   </div>
 </template>
 
@@ -90,16 +75,13 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getCodeImg } from '@/api/auth'
-import { ElMessage } from 'element-plus'
-import { View, Hide, User, Lock, Key } from '@element-plus/icons-vue'
+import { message } from 'ant-design-vue'
+import { UserOutlined, LockOutlined, KeyOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const loginFormRef = ref(null)
-const passwordRef = ref(null)
-const passwordType = ref('password')
-const capsTooltip = ref(false)
 const loading = ref(false)
 const codeUrl = ref('')
 const loginForm = reactive({
@@ -115,19 +97,6 @@ const loginRules = {
   code: [{ required: true, trigger: 'change', message: '验证码不能为空' }]
 }
 
-const showPwd = () => {
-  if (passwordType.value === 'password') {
-    passwordType.value = ''
-  } else {
-    passwordType.value = 'password'
-  }
-}
-
-const checkCapslock = (e) => {
-  const { key } = e
-  capsTooltip.value = key && key.length === 1 && key >= 'A' && key <= 'Z'
-}
-
 const getCode = async () => {
   try {
     const res = await getCodeImg()
@@ -135,32 +104,44 @@ const getCode = async () => {
       codeUrl.value = 'data:image/gif;base64,' + res.img
       loginForm.uuid = res.uuid
     } else {
-      ElMessage.error('获取验证码失败：响应数据格式错误')
+      message.error('获取验证码失败：响应数据格式错误')
       console.error('验证码响应:', res)
     }
   } catch (error) {
-    ElMessage.error('获取验证码失败：' + (error.message || '网络错误'))
+    message.error('获取验证码失败：' + (error.message || '网络错误'))
     console.error('获取验证码错误:', error)
   }
 }
 
 const handleLogin = () => {
-  loginFormRef.value.validate(async (valid) => {
-    if (valid) {
-      loading.value = true
-      try {
-        await authStore.login(loginForm)
-        await authStore.getUserInfo()
-        ElMessage.success('登录成功')
-        router.push('/')
-      } catch (error) {
-        loading.value = false
-        // 刷新验证码
-        getCode()
+  loginFormRef.value.validate().then(async () => {
+    loading.value = true
+    try {
+      await authStore.login(loginForm)
+      await authStore.getUserInfo()
+      message.success('登录成功')
+      
+      // 根据用户角色跳转到对应页面
+      const isAdmin = authStore.roles?.includes('admin') || false
+      const isCustomer = authStore.roles?.includes('customer') || false
+      
+      if (isAdmin) {
+        // 管理员跳转到车辆管理页面
+        router.push('/admin/vehicle')
+      } else if (isCustomer) {
+        // 普通用户跳转到车辆查看页面
+        router.push('/customer/vehicle/list')
+      } else {
+        // 如果没有角色信息，默认跳转到车辆浏览页面
+        router.push('/customer/vehicle/list')
       }
-    } else {
-      return false
+    } catch (error) {
+      loading.value = false
+      // 刷新验证码
+      getCode()
     }
+  }).catch(() => {
+    // 验证失败
   })
 }
 
@@ -235,24 +216,12 @@ onMounted(() => {
     }
   }
 
-  .show-pwd {
-    font-size: 18px;
-    color: $text-secondary;
-    cursor: pointer;
-    user-select: none;
-    transition: color 0.3s;
-    
-    &:hover {
-      color: $primary-color;
-    }
-  }
-
   .login-code {
-    width: 33%;
+    width: 120px;
     height: 40px;
-    float: right;
     border-radius: $radius-md;
     overflow: hidden;
+    display: inline-block;
 
     .login-code-img {
       height: 40px;
@@ -287,70 +256,23 @@ onMounted(() => {
   }
 }
 
-:deep(.el-input) {
-  display: inline-block;
-  height: 48px;
-  width: 100%;
-
-  .el-input__wrapper {
-    background: $bg-white !important;
-    border: 1px solid $border-color !important;
-    border-radius: $radius-md !important;
-    box-shadow: $shadow-sm !important;
-    transition: all 0.3s ease;
-    
-    &:hover {
-      border-color: $primary-light !important;
-      box-shadow: $shadow-md !important;
-    }
-  }
-
-  input {
-    background: transparent !important;
-    border: 0 !important;
-    padding: 12px 15px;
-    color: $text-primary !important;
-    height: 48px;
-    caret-color: $primary-color;
-    font-size: 14px;
-
-    &::placeholder {
-      color: $text-tertiary !important;
-    }
-
-    &:focus {
-      color: $text-primary !important;
-    }
+:deep(.ant-input-affix-wrapper) {
+  border-radius: $radius-md;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $primary-light;
   }
 }
 
-:deep(.el-form-item) {
-  border: none;
-  background: transparent;
-  margin-bottom: 24px;
+:deep(.ant-input-affix-wrapper-focused) {
+  border-color: $primary-color;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-:deep(.el-input__wrapper.is-focus) {
-  border-color: $primary-color !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-}
-
-:deep(.el-input__prefix) {
-  color: $text-secondary;
-  padding-left: 12px;
-}
-
-:deep(.el-input__suffix) {
-  color: $text-secondary;
-  padding-right: 12px;
-}
-
-:deep(.el-button--primary) {
+:deep(.ant-btn-primary) {
   background: $primary-color;
   border: none;
-  height: 48px;
-  font-size: 16px;
-  font-weight: 500;
   border-radius: $radius-md;
   transition: all 0.3s ease;
   box-shadow: $shadow-md;

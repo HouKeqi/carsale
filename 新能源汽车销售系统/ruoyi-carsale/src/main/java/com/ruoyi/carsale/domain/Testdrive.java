@@ -33,7 +33,27 @@ public class Testdrive extends BaseEntity {
     @Excel(name = "预约时间")
     private String appointTime;
     @Excel(name = "预约状态")
-    private int status;
+    private Integer status;
+    @Excel(name = "审核时间")
+    private String auditTime;
+    @Excel(name = "审核备注")
+    private String auditRemark;
+
+    public String getAuditTime() {
+        return auditTime;
+    }
+
+    public void setAuditTime(String auditTime) {
+        this.auditTime = auditTime;
+    }
+
+    public String getAuditRemark() {
+        return auditRemark;
+    }
+
+    public void setAuditRemark(String auditRemark) {
+        this.auditRemark = auditRemark;
+    }
 
     public String getStoreName() {
         return storeName;
@@ -75,11 +95,11 @@ public class Testdrive extends BaseEntity {
         this.appointTime = appointTime;
     }
 
-    public int getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 

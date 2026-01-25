@@ -28,12 +28,14 @@ import com.ruoyi.common.core.domain.BaseEntity;
 public class Evaluation extends BaseEntity {
     @Excel(name = "评价编号")
     private Long id;
+    @Excel(name = "用户编号")
+    private Long userId;
     @Excel(name = "订单编号")
     private Long orderId;
     @Excel(name = "车辆编号")
     private Long vehicleId;
     @Excel(name = "评分")
-    private int score;
+    private Integer score;
     @Excel(name = "评价内容")
     private String comment;
     @Excel(name = "图片")
@@ -65,11 +67,11 @@ public class Evaluation extends BaseEntity {
         this.comment = comment;
     }
 
-    public int getScore() {
+    public Integer getScore() {
         return score;
     }
 
-    public void setScore(int score) {
+    public void setScore(Integer score) {
         this.score = score;
     }
 
@@ -97,6 +99,12 @@ public class Evaluation extends BaseEntity {
         this.id = id;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
 
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
 }

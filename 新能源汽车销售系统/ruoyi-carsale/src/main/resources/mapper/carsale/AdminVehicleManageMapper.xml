@@ -90,7 +90,7 @@
             <if test="stock != null"> and stock = #{stock}</if>
             <if test="launchDate != null "> and launch_date = #{launchDate}</if>
             <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>
-            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="description != null  and description != ''"> and description like concat('%', #{description}, '%')</if>
             <if test="imageUrl != null  and imageUrl != ''"> and image_url = #{imageUrl}</if>
         </where>
         <choose>
@@ -99,6 +99,12 @@
             </when>
             <when test="orderByColumn != null and orderByColumn == 'rangeKm'">
                 ORDER BY range_km ${isAsc}
+            </when>
+            <when test="orderByColumn != null and orderByColumn == 'stock'">
+                ORDER BY stock ${isAsc}
+            </when>
+            <when test="orderByColumn != null and orderByColumn == 'id'">
+                ORDER BY id ${isAsc}
             </when>
             <otherwise>
                 ORDER BY id DESC
@@ -286,6 +292,13 @@
         from carsale_vehicle
         where stock &lt;= 5
 
+    </select>
+
+    <!-- 检查车辆是否有关联订单 -->
+    <select id="countOrdersByVehicleId" parameterType="Long" resultType="int">
+        select count(1)
+        from carsale_orders
+        where vehicle_id = #{vehicleId}
     </select>
 
 </mapper>

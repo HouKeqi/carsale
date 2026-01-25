@@ -27,51 +27,16 @@
         <result property="storeName" column="store_name"/>
         <result property="appointTime" column="appoint_time"/>
         <result property="status" column="status"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="auditRemark" column="audit_remark"/>
     </resultMap>
 
     <!-- 新增用户试驾 -->
-    <insert id="insertTestdrive" parameterType="Testdrive">
+    <insert id="insertTestdrive" parameterType="Testdrive" useGeneratedKeys="true" keyProperty="id">
         insert into carsale_test_drive
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                id,
-            </if>
-            <if test="userId != null">
-                user_id,
-            </if>
-            <if test="vehicleId != null">
-                vehicle_id,
-            </if>
-            <if test="storeName != null">
-                store_name,
-            </if>
-            <if test="appointTime != null">
-                appoint_time,
-            </if>
-                <if test="status != null">
-                status,
-            </if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                #{id},
-            </if>
-            <if test="userId != null">
-                #{userId},
-            </if>
-            <if test="vehicleId != null">
-                #{vehicleId},
-            </if>
-            <if test="storeName != null">
-                #{storeName},
-            </if>
-            <if test="appointTime != null">
-                #{appointTime},
-            </if>
-            <if test="status != null">
-                #{status},
-            </if>
-        </trim>
+        (user_id, vehicle_id, store_name, appoint_time, status, audit_time, audit_remark)
+        values
+        (#{userId}, #{vehicleId}, #{storeName}, #{appointTime}, #{status}, #{auditTime}, #{auditRemark})
     </insert>
 
     <!-- 修改用户试驾 -->
@@ -93,6 +58,12 @@
             <if test="status != null">
                 status = #{status},
             </if>
+            <if test="auditTime != null">
+                audit_time = #{auditTime},
+            </if>
+            <if test="auditRemark != null">
+                audit_remark = #{auditRemark},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -112,14 +83,14 @@
 
     <!-- 根据id查询用户试驾 -->
     <select id="selectTestdriveById" parameterType="Long" resultMap="TestdriveMap">
-        select id,user_id,vehicle_id,store_name,appoint_time,status
+        select id,user_id,vehicle_id,store_name,appoint_time,status,audit_time,audit_remark
         from carsale_test_drive
         where id = #{id}
     </select>
 
     <!-- 获取用户试驾列表 -->
     <select id="selectTestdriveList" parameterType="Testdrive" resultMap="TestdriveMap">
-        select id,user_id,vehicle_id,store_name,appoint_time,status
+        select id,user_id,vehicle_id,store_name,appoint_time,status,audit_time,audit_remark
         from carsale_test_drive
         <where>
             <if test="id != null">         and id = #{id}             </if>
@@ -128,6 +99,8 @@
             <if test="storeName != null">      and store_name = #{storeName}          </if>
             <if test="appointTime != null">      and appoint_time = #{appointTime}          </if>
             <if test="status != null">      and status = #{status}          </if>
+            <if test="auditTime != null">      and audit_time = #{auditTime}          </if>
+            <if test="auditRemark != null">      and audit_remark = #{auditRemark}          </if>
         </where>
     </select>
 
