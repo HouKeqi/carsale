@@ -59,4 +59,11 @@ CREATE DATABASE `ry-vue` DEFAULT CHARACTER SET utf8mb4;
 
 4. IDEA中运行 RuoYiApplication.java
 
-   
+## 五、账号密码
+
+| 账号  | 密码     |
+| ----- | -------- |
+| admin | admin123 |
+| user  | 123456   |
+
+##   
