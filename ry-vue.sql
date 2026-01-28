@@ -1,17 +1,17 @@
 /*
- Navicat Premium Data Transfer
+ Navicat Premium Dump SQL
 
  Source Server         : localhost_3306
  Source Server Type    : MySQL
- Source Server Version : 80040 (8.0.40)
+ Source Server Version : 80032 (8.0.32)
  Source Host           : localhost:3306
  Source Schema         : ry-vue
 
  Target Server Type    : MySQL
- Target Server Version : 80040 (8.0.40)
+ Target Server Version : 80032 (8.0.32)
  File Encoding         : 65001
 
- Date: 22/01/2026 00:58:41
+ Date: 24/01/2026 20:28:11
 */
 
 SET NAMES utf8mb4;
@@ -23,6 +23,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `carsale_evaluation`;
 CREATE TABLE `carsale_evaluation`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '评价唯一标识',
+  `user_id` bigint NOT NULL COMMENT '评价用户ID',
   `order_id` bigint NOT NULL COMMENT '关联订单',
   `vehicle_id` bigint NOT NULL COMMENT '关联车型',
   `score` int NULL DEFAULT NULL COMMENT '评分(1-5星)',
@@ -32,13 +33,18 @@ CREATE TABLE `carsale_evaluation`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_order_id`(`order_id` ASC) USING BTREE,
   INDEX `fk_eval_vehicle`(`vehicle_id` ASC) USING BTREE,
+  INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
   CONSTRAINT `fk_eval_order` FOREIGN KEY (`order_id`) REFERENCES `carsale_orders` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `fk_eval_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `fk_eval_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户评价表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户评价表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of carsale_evaluation
 -- ----------------------------
+INSERT INTO `carsale_evaluation` VALUES (1, 109, 1769221564341, 9, 5, '好', NULL, NULL);
+INSERT INTO `carsale_evaluation` VALUES (2, 109, 1769224584373, 6, 5, '好好好', '[\"https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/face_default_m_20260124112328A003.jpg\"]', NULL);
+INSERT INTO `carsale_evaluation` VALUES (3, 109, 1769225278509, 6, 5, '非常好', '[\"https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/微信图片_20211210175704_20260124112854A001.jpg\"]', '2026-01-24 11:28:58');
 
 -- ----------------------------
 -- Table structure for carsale_orders
@@ -55,17 +61,23 @@ CREATE TABLE `carsale_orders`  (
   `store_location` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '提车门店名称',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '下单时间',
   `pay_time` datetime NULL DEFAULT NULL COMMENT '支付完成时间',
+  `pickup_time` datetime NULL DEFAULT NULL COMMENT '提车时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `fk_order_user`(`user_id` ASC) USING BTREE,
   INDEX `fk_order_vehicle`(`vehicle_id` ASC) USING BTREE,
+  INDEX `idx_status`(`status` ASC) USING BTREE,
+  INDEX `idx_create_time`(`create_time` ASC) USING BTREE,
   CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '销售订单表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '销售订单表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of carsale_orders
 -- ----------------------------
-INSERT INTO `carsale_orders` VALUES (202601130001, 2, 1, 1, 258900.00, 1, NULL, '上海中心门店', '2026-01-19 23:19:14', NULL);
+INSERT INTO `carsale_orders` VALUES (202601130001, 2, 1, 3, 258900.00, 1, NULL, '上海中心门店', '2026-01-19 23:19:14', NULL, '2026-01-24 16:23:59');
+INSERT INTO `carsale_orders` VALUES (1769221564341, 109, 9, 3, 215900.00, 1, '13991245952', '门店1', NULL, '2026-01-24 10:47:41', '2026-01-24 11:08:18');
+INSERT INTO `carsale_orders` VALUES (1769224584373, 109, 6, 3, 215900.00, 1, '13991245952', '上海中心门店', NULL, '2026-01-24 11:16:27', '2026-01-24 11:17:34');
+INSERT INTO `carsale_orders` VALUES (1769225278509, 109, 6, 3, 215900.00, 1, '13991245952', '深圳南山门店', '2026-01-24 11:27:58', '2026-01-24 11:28:00', '2026-01-24 11:28:20');
 
 -- ----------------------------
 -- Table structure for carsale_promotion
@@ -79,17 +91,43 @@ CREATE TABLE `carsale_promotion`  (
   `discount_value` decimal(12, 2) NULL DEFAULT NULL COMMENT '优惠金额或价值描述',
   `start_time` datetime NULL DEFAULT NULL COMMENT '有效期开始时间',
   `end_time` datetime NULL DEFAULT NULL COMMENT '有效期结束时间',
+  `status` int NULL DEFAULT 1 COMMENT '活动状态：0-下架，1-上架',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `fk_promotion_vehicle`(`vehicle_id` ASC) USING BTREE,
   CONSTRAINT `fk_promotion_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '促销活动管理表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '促销活动管理表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of carsale_promotion
 -- ----------------------------
-INSERT INTO `carsale_promotion` VALUES (1, '春季购车送桩', 1, 1, 3000.00, '2026-01-01 00:00:00', '2026-03-31 00:00:00');
-INSERT INTO `carsale_promotion` VALUES (2, '春季购车送桩', 1, 1, 3000.00, '2026-01-01 00:00:00', '2026-03-31 00:00:00');
-INSERT INTO `carsale_promotion` VALUES (3, '春季购车送桩', 1, 1, 3000.00, '2026-01-01 00:00:00', '2026-03-31 00:00:00');
+INSERT INTO `carsale_promotion` VALUES (1, '春季购车送桩', 1, 1, 3000.00, '2026-01-01 00:00:00', '2026-03-31 00:00:00', 1);
+INSERT INTO `carsale_promotion` VALUES (2, '春季购车送桩', 1, 1, 3000.00, '2026-01-01 00:00:00', '2026-03-31 00:00:00', 1);
+INSERT INTO `carsale_promotion` VALUES (3, '春季购车送桩', 1, 1, 3000.00, '2026-01-01 00:00:00', '2026-03-31 00:00:00', 1);
+INSERT INTO `carsale_promotion` VALUES (4, '活动1', 10, 0, 1000.00, '2026-01-24 16:27:44', '2026-01-31 16:27:36', 1);
+
+-- ----------------------------
+-- Table structure for carsale_store
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_store`;
+CREATE TABLE `carsale_store`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '门店ID',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '门店名称',
+  `address` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '门店地址',
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '联系电话',
+  `status` int NULL DEFAULT 1 COMMENT '状态：0-停用，1-启用',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_status`(`status` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '门店表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of carsale_store
+-- ----------------------------
+INSERT INTO `carsale_store` VALUES (1, '上海中心门店', '上海市黄浦区南京东路100号', '021-12345678', 1, '2026-01-24 10:56:09', '2026-01-24 10:56:09');
+INSERT INTO `carsale_store` VALUES (2, '北京朝阳门店', '北京市朝阳区建国路88号', '010-87654321', 1, '2026-01-24 10:56:09', '2026-01-24 10:56:09');
+INSERT INTO `carsale_store` VALUES (3, '深圳南山门店', '深圳市南山区科技园南路200号', '0755-11223344', 1, '2026-01-24 10:56:09', '2026-01-24 10:56:09');
+INSERT INTO `carsale_store` VALUES (4, '广州天河门店', '广州市天河区天河路500号', '020-55667788', 1, '2026-01-24 10:56:09', '2026-01-24 10:56:09');
 
 -- ----------------------------
 -- Table structure for carsale_test_drive
@@ -102,16 +140,19 @@ CREATE TABLE `carsale_test_drive`  (
   `store_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '预约门店',
   `appoint_time` datetime NULL DEFAULT NULL COMMENT '用户选择的试驾时间',
   `status` int NULL DEFAULT 0 COMMENT '0-待审核, 1-通过, 2-拒绝',
+  `audit_time` datetime NULL DEFAULT NULL COMMENT '审核时间',
+  `audit_remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '审核备注',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `fk_test_user`(`user_id` ASC) USING BTREE,
   INDEX `fk_test_vehicle`(`vehicle_id` ASC) USING BTREE,
   CONSTRAINT `fk_test_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `fk_test_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '试驾预约管理表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '试驾预约管理表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of carsale_test_drive
 -- ----------------------------
+INSERT INTO `carsale_test_drive` VALUES (1, 109, 6, '门店1', '2026-01-30 10:24:59', 1, '2026-01-24 10:25:24', '可以');
 
 -- ----------------------------
 -- Table structure for carsale_vehicle
@@ -129,21 +170,181 @@ CREATE TABLE `carsale_vehicle`  (
   `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
   `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_brand`(`brand` ASC) USING BTREE,
+  INDEX `idx_price`(`price` ASC) USING BTREE,
+  INDEX `idx_range_km`(`range_km` ASC) USING BTREE,
+  INDEX `idx_battery_type`(`battery_type` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of carsale_vehicle
 -- ----------------------------
-INSERT INTO `carsale_vehicle` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
-INSERT INTO `carsale_vehicle` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
-INSERT INTO `carsale_vehicle` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
-INSERT INTO `carsale_vehicle` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
-INSERT INTO `carsale_vehicle` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
-INSERT INTO `carsale_vehicle` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
-INSERT INTO `carsale_vehicle` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
-INSERT INTO `carsale_vehicle` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
-INSERT INTO `carsale_vehicle` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\",\"ai_level\":\"L2\"}', NULL, 'https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/Tesla Model_20260124172832A003.png');
+INSERT INTO `carsale_vehicle` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 0, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\",\"ai_level\":\"L2\"}', NULL, 'https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/比亚迪汉EV_20260124172816A002.png');
+INSERT INTO `carsale_vehicle` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\",\"ai_level\":\"L3\"}', NULL, 'https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/小米su7_20260124172804A001.png');
+INSERT INTO `carsale_vehicle` VALUES (10, '车型1', '品牌1', 10000.00, 0, 10000, 100, '2026-01-24', '{\"fast_charge\":\"0.5h\",\"ai_level\":\"L2\"}', '111', 'https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/小米su7_20260124161130A001.png');
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy1
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy1`;
+CREATE TABLE `carsale_vehicle_copy1`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy1
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy1` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy1` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy2
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy2`;
+CREATE TABLE `carsale_vehicle_copy2`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy2
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy2` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy2` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy3
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy3`;
+CREATE TABLE `carsale_vehicle_copy3`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy3
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy3` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy3` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy4
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy4`;
+CREATE TABLE `carsale_vehicle_copy4`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy4
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy4` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy4` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+
+-- ----------------------------
+-- Table structure for carsale_vehicle_copy5
+-- ----------------------------
+DROP TABLE IF EXISTS `carsale_vehicle_copy5`;
+CREATE TABLE `carsale_vehicle_copy5`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '车辆唯一标识',
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车型名称',
+  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '品牌名称',
+  `price` decimal(12, 2) NOT NULL COMMENT '指导价',
+  `battery_type` int NOT NULL COMMENT '电池类型',
+  `range_km` int NULL DEFAULT NULL COMMENT '续航里程(km)',
+  `stock` int NULL DEFAULT 0 COMMENT '库存数量',
+  `launch_date` date NULL DEFAULT NULL COMMENT '上市时间',
+  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '配置参数(快充、智驾等JSON)',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of carsale_vehicle_copy5
+-- ----------------------------
+INSERT INTO `carsale_vehicle_copy5` VALUES (1, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (2, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (3, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (4, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (5, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (6, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (7, 'Model 3', 'Tesla', 258900.00, 0, 606, 12, '2023-09-01', '{\"fast_charge\":\"0.5h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (8, '汉 EV', 'BYD', 221800.00, 1, 715, 3, '2023-03-20', '{\"fast_charge\":\"0.42h\", \"ai_level\":\"L2\"}', NULL, NULL);
+INSERT INTO `carsale_vehicle_copy5` VALUES (9, 'SU7', 'Xiaomi', 215900.00, 2, 700, 2, '2024-03-28', '{\"fast_charge\":\"0.35h\", \"ai_level\":\"L3\"}', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for gen_table
@@ -531,7 +732,7 @@ CREATE TABLE `mes_project_maintenance`  (
   `status` int NULL DEFAULT NULL COMMENT '项目状态 0：挂起 1：正常',
   `introduce` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '项目介绍',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 35 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '制造执行MES-项目维护表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 34 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '制造执行MES-项目维护表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of mes_project_maintenance
@@ -1188,7 +1389,7 @@ CREATE TABLE `sys_logininfor`  (
   PRIMARY KEY (`info_id`) USING BTREE,
   INDEX `idx_sys_logininfor_s`(`status` ASC) USING BTREE,
   INDEX `idx_sys_logininfor_lt`(`login_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 309 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统访问记录' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 421 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统访问记录' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_logininfor
@@ -1397,11 +1598,123 @@ INSERT INTO `sys_logininfor` VALUES (300, 'admin', '127.0.0.1', '内网IP', 'Chr
 INSERT INTO `sys_logininfor` VALUES (301, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-18 21:26:20');
 INSERT INTO `sys_logininfor` VALUES (302, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-19 23:29:31');
 INSERT INTO `sys_logininfor` VALUES (303, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-20 00:08:10');
-INSERT INTO `sys_logininfor` VALUES (304, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-20 18:05:29');
-INSERT INTO `sys_logininfor` VALUES (305, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-20 19:56:37');
-INSERT INTO `sys_logininfor` VALUES (306, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-20 22:08:03');
-INSERT INTO `sys_logininfor` VALUES (307, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-21 23:04:55');
-INSERT INTO `sys_logininfor` VALUES (308, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-22 00:06:08');
+INSERT INTO `sys_logininfor` VALUES (304, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-20 20:34:45');
+INSERT INTO `sys_logininfor` VALUES (305, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码错误', '2026-01-21 01:21:45');
+INSERT INTO `sys_logininfor` VALUES (306, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码错误', '2026-01-21 01:21:54');
+INSERT INTO `sys_logininfor` VALUES (307, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-21 01:30:56');
+INSERT INTO `sys_logininfor` VALUES (308, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-21 01:31:00');
+INSERT INTO `sys_logininfor` VALUES (309, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-22 18:59:10');
+INSERT INTO `sys_logininfor` VALUES (310, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-23 18:06:23');
+INSERT INTO `sys_logininfor` VALUES (311, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-23 19:15:38');
+INSERT INTO `sys_logininfor` VALUES (312, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 10:15:21');
+INSERT INTO `sys_logininfor` VALUES (313, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 10:18:46');
+INSERT INTO `sys_logininfor` VALUES (314, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 10:18:54');
+INSERT INTO `sys_logininfor` VALUES (315, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 10:18:55');
+INSERT INTO `sys_logininfor` VALUES (316, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 10:25:12');
+INSERT INTO `sys_logininfor` VALUES (317, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 10:25:17');
+INSERT INTO `sys_logininfor` VALUES (318, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 10:25:31');
+INSERT INTO `sys_logininfor` VALUES (319, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 10:25:43');
+INSERT INTO `sys_logininfor` VALUES (320, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 10:48:02');
+INSERT INTO `sys_logininfor` VALUES (321, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 10:48:08');
+INSERT INTO `sys_logininfor` VALUES (322, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 10:48:09');
+INSERT INTO `sys_logininfor` VALUES (323, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 10:48:32');
+INSERT INTO `sys_logininfor` VALUES (324, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 10:48:38');
+INSERT INTO `sys_logininfor` VALUES (325, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 10:48:38');
+INSERT INTO `sys_logininfor` VALUES (326, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 10:49:09');
+INSERT INTO `sys_logininfor` VALUES (327, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 10:49:25');
+INSERT INTO `sys_logininfor` VALUES (328, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 10:51:14');
+INSERT INTO `sys_logininfor` VALUES (329, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 10:51:17');
+INSERT INTO `sys_logininfor` VALUES (330, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 10:51:18');
+INSERT INTO `sys_logininfor` VALUES (331, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 10:59:43');
+INSERT INTO `sys_logininfor` VALUES (332, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 10:59:51');
+INSERT INTO `sys_logininfor` VALUES (333, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 10:59:52');
+INSERT INTO `sys_logininfor` VALUES (334, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:07:19');
+INSERT INTO `sys_logininfor` VALUES (335, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:07:26');
+INSERT INTO `sys_logininfor` VALUES (336, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:07:26');
+INSERT INTO `sys_logininfor` VALUES (337, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:07:40');
+INSERT INTO `sys_logininfor` VALUES (338, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:07:49');
+INSERT INTO `sys_logininfor` VALUES (339, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:07:49');
+INSERT INTO `sys_logininfor` VALUES (340, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:08:05');
+INSERT INTO `sys_logininfor` VALUES (341, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:08:10');
+INSERT INTO `sys_logininfor` VALUES (342, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:08:10');
+INSERT INTO `sys_logininfor` VALUES (343, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:08:25');
+INSERT INTO `sys_logininfor` VALUES (344, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码错误', '2026-01-24 11:08:33');
+INSERT INTO `sys_logininfor` VALUES (345, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:08:34');
+INSERT INTO `sys_logininfor` VALUES (346, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:08:37');
+INSERT INTO `sys_logininfor` VALUES (347, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:16:33');
+INSERT INTO `sys_logininfor` VALUES (348, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:16:38');
+INSERT INTO `sys_logininfor` VALUES (349, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:16:39');
+INSERT INTO `sys_logininfor` VALUES (350, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:16:54');
+INSERT INTO `sys_logininfor` VALUES (351, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:17:05');
+INSERT INTO `sys_logininfor` VALUES (352, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:17:05');
+INSERT INTO `sys_logininfor` VALUES (353, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:17:22');
+INSERT INTO `sys_logininfor` VALUES (354, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:17:25');
+INSERT INTO `sys_logininfor` VALUES (355, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:17:25');
+INSERT INTO `sys_logininfor` VALUES (356, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:17:46');
+INSERT INTO `sys_logininfor` VALUES (357, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:18:00');
+INSERT INTO `sys_logininfor` VALUES (358, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:20:17');
+INSERT INTO `sys_logininfor` VALUES (359, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:20:26');
+INSERT INTO `sys_logininfor` VALUES (360, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:20:26');
+INSERT INTO `sys_logininfor` VALUES (361, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:25:46');
+INSERT INTO `sys_logininfor` VALUES (362, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码错误', '2026-01-24 11:25:49');
+INSERT INTO `sys_logininfor` VALUES (363, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码错误', '2026-01-24 11:25:49');
+INSERT INTO `sys_logininfor` VALUES (364, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:25:55');
+INSERT INTO `sys_logininfor` VALUES (365, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:25:55');
+INSERT INTO `sys_logininfor` VALUES (366, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:27:32');
+INSERT INTO `sys_logininfor` VALUES (367, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:27:39');
+INSERT INTO `sys_logininfor` VALUES (368, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:27:40');
+INSERT INTO `sys_logininfor` VALUES (369, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:28:05');
+INSERT INTO `sys_logininfor` VALUES (370, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:28:09');
+INSERT INTO `sys_logininfor` VALUES (371, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:28:09');
+INSERT INTO `sys_logininfor` VALUES (372, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:28:24');
+INSERT INTO `sys_logininfor` VALUES (373, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 11:28:35');
+INSERT INTO `sys_logininfor` VALUES (374, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:28:35');
+INSERT INTO `sys_logininfor` VALUES (375, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 11:38:50');
+INSERT INTO `sys_logininfor` VALUES (376, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 11:38:54');
+INSERT INTO `sys_logininfor` VALUES (377, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 15:31:22');
+INSERT INTO `sys_logininfor` VALUES (378, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 15:31:22');
+INSERT INTO `sys_logininfor` VALUES (379, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 15:41:30');
+INSERT INTO `sys_logininfor` VALUES (380, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 15:41:39');
+INSERT INTO `sys_logininfor` VALUES (381, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 15:41:39');
+INSERT INTO `sys_logininfor` VALUES (382, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 16:10:42');
+INSERT INTO `sys_logininfor` VALUES (383, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 16:10:47');
+INSERT INTO `sys_logininfor` VALUES (384, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 16:15:04');
+INSERT INTO `sys_logininfor` VALUES (385, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '用户不存在/密码错误', '2026-01-24 16:15:10');
+INSERT INTO `sys_logininfor` VALUES (386, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码错误', '2026-01-24 16:15:10');
+INSERT INTO `sys_logininfor` VALUES (387, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码错误', '2026-01-24 16:15:15');
+INSERT INTO `sys_logininfor` VALUES (388, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 16:15:19');
+INSERT INTO `sys_logininfor` VALUES (389, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 16:15:19');
+INSERT INTO `sys_logininfor` VALUES (390, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 16:16:21');
+INSERT INTO `sys_logininfor` VALUES (391, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 16:16:24');
+INSERT INTO `sys_logininfor` VALUES (392, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 16:16:24');
+INSERT INTO `sys_logininfor` VALUES (393, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 16:32:11');
+INSERT INTO `sys_logininfor` VALUES (394, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 16:32:19');
+INSERT INTO `sys_logininfor` VALUES (395, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 16:32:19');
+INSERT INTO `sys_logininfor` VALUES (396, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 17:15:28');
+INSERT INTO `sys_logininfor` VALUES (397, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 17:15:28');
+INSERT INTO `sys_logininfor` VALUES (398, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 17:17:37');
+INSERT INTO `sys_logininfor` VALUES (399, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 17:17:49');
+INSERT INTO `sys_logininfor` VALUES (400, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 17:19:06');
+INSERT INTO `sys_logininfor` VALUES (401, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 17:19:15');
+INSERT INTO `sys_logininfor` VALUES (402, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 17:19:16');
+INSERT INTO `sys_logininfor` VALUES (403, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 17:19:23');
+INSERT INTO `sys_logininfor` VALUES (404, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 17:19:24');
+INSERT INTO `sys_logininfor` VALUES (405, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 17:19:45');
+INSERT INTO `sys_logininfor` VALUES (406, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 17:19:49');
+INSERT INTO `sys_logininfor` VALUES (407, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 17:20:49');
+INSERT INTO `sys_logininfor` VALUES (408, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 17:20:52');
+INSERT INTO `sys_logininfor` VALUES (409, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 17:20:52');
+INSERT INTO `sys_logininfor` VALUES (410, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 17:22:11');
+INSERT INTO `sys_logininfor` VALUES (411, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 17:22:18');
+INSERT INTO `sys_logininfor` VALUES (412, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 17:22:18');
+INSERT INTO `sys_logininfor` VALUES (413, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 17:27:19');
+INSERT INTO `sys_logininfor` VALUES (414, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 17:27:25');
+INSERT INTO `sys_logininfor` VALUES (415, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 17:27:25');
+INSERT INTO `sys_logininfor` VALUES (416, 'admin', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '退出成功', '2026-01-24 17:28:40');
+INSERT INTO `sys_logininfor` VALUES (417, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 17:28:49');
+INSERT INTO `sys_logininfor` VALUES (418, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '用户不存在/密码错误', '2026-01-24 17:28:49');
+INSERT INTO `sys_logininfor` VALUES (419, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '1', '验证码已失效', '2026-01-24 17:28:55');
+INSERT INTO `sys_logininfor` VALUES (420, 'user', '127.0.0.1', '内网IP', 'Chrome 14', 'Windows 10', '0', '登录成功', '2026-01-24 17:28:56');
 
 -- ----------------------------
 -- Table structure for sys_menu
@@ -1608,7 +1921,7 @@ CREATE TABLE `sys_oper_log`  (
   INDEX `idx_sys_oper_log_bt`(`business_type` ASC) USING BTREE,
   INDEX `idx_sys_oper_log_s`(`status` ASC) USING BTREE,
   INDEX `idx_sys_oper_log_ot`(`oper_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 495 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志记录' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 530 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志记录' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -2000,14 +2313,49 @@ INSERT INTO `sys_oper_log` VALUES (483, '菜单管理', 2, 'com.ruoyi.web.contro
 INSERT INTO `sys_oper_log` VALUES (484, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"CREATE TABLE `carsale_vehicle`  (\\n  `id` bigint NOT NULL AUTO_INCREMENT COMMENT \'车辆唯一标识\',\\n  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT \'车型名称\',\\n  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT \'品牌名称\',\\n  `price` decimal(12, 2) NOT NULL COMMENT \'指导价\',\\n  `battery_type` int NOT NULL COMMENT \'电池类型\',\\n  `range_km` int NULL DEFAULT NULL COMMENT \'续航里程(km)\',\\n  `stock` int NULL DEFAULT 0 COMMENT \'库存数量\',\\n  `launch_date` date NULL DEFAULT NULL COMMENT \'上市时间\',\\n  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'配置参数(快充、智驾等JSON)\',\\n  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'车辆详情描述\',\\n  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT \'车辆封面图片路径\',\\n  PRIMARY KEY (`id`) USING BTREE\\n) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = \'车辆信息基础表\' ROW_FORMAT = Dynamic;\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-19 23:31:48', 109);
 INSERT INTO `sys_oper_log` VALUES (485, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"CREATE TABLE `carsale_vehicle`  (\\n  `id` bigint NOT NULL AUTO_INCREMENT COMMENT \'车辆唯一标识\',\\n  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT \'车型名称\',\\n  `brand` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT \'品牌名称\',\\n  `price` decimal(12, 2) NOT NULL COMMENT \'指导价\',\\n  `battery_type` int NOT NULL COMMENT \'电池类型\',\\n  `range_km` int NULL DEFAULT NULL COMMENT \'续航里程(km)\',\\n  `stock` int NULL DEFAULT 0 COMMENT \'库存数量\',\\n  `launch_date` date NULL DEFAULT NULL COMMENT \'上市时间\',\\n  `config_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'配置参数(快充、智驾等JSON)\',\\n  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'车辆详情描述\',\\n  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT \'车辆封面图片路径\',\\n  PRIMARY KEY (`id`) USING BTREE\\n) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = \'车辆信息基础表\' ROW_FORMAT = Dynamic;\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-19 23:33:10', 21);
 INSERT INTO `sys_oper_log` VALUES (486, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"CREATE TABLE `vehicle` (\\n  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT \'车辆唯一标识\',\\n  `name` VARCHAR(100) NOT NULL COMMENT \'车型名称\',\\n  `brand` VARCHAR(50) NOT NULL COMMENT \'品牌名称\',\\n  `price` DECIMAL(12,2) NOT NULL COMMENT \'指导价\',\\n  `battery_type` INT NOT NULL COMMENT \'电池类型\',\\n  `range_km` INT DEFAULT NULL COMMENT \'续航里程(km)\',\\n  `stock` INT DEFAULT 0 COMMENT \'库存数量\',\\n  `launch_date` DATE DEFAULT NULL COMMENT \'上市时间\',\\n  `config_json` TEXT DEFAULT NULL COMMENT \'配置参数(快充、智驾等JSON)\',\\n  `description` TEXT DEFAULT NULL COMMENT \'车辆详情描述\',\\n  `image_url` VARCHAR(255) DEFAULT NULL COMMENT \'车辆封面图片路径\',\\n  PRIMARY KEY (`id`)\\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=\'车辆信息基础表\';\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-19 23:33:38', 145);
-INSERT INTO `sys_oper_log` VALUES (487, '用户管理', 1, 'com.ruoyi.web.controller.system.SysUserController.add()', 'POST', 1, 'admin', '软件工程', '/system/user', '127.0.0.1', '内网IP', '{\"admin\":false,\"createBy\":\"admin\",\"deptId\":100,\"nickName\":\"if\",\"params\":{},\"postIds\":[],\"roleIds\":[],\"sex\":\"2\",\"status\":\"0\",\"userId\":109,\"userName\":\"if\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-20 18:18:36', 114);
-INSERT INTO `sys_oper_log` VALUES (488, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"-- --------------------------------------------------\\n-- 4. 订单表 (orders)\\n-- --------------------------------------------------\\nCREATE TABLE `orders` (\\n  `id` BIGINT NOT NULL COMMENT \'订单编号(建议雪花算法)\',\\n  `user_id` BIGINT NOT NULL COMMENT \'关联购车用户\',\\n  `vehicle_id` BIGINT NOT NULL COMMENT \'关联购车车型\',\\n  `status` INT DEFAULT 0 COMMENT \'0-待付, 1-已付, 2-待提, 3-完成, 4-取消\',\\n  `amount` DECIMAL(12,2) NOT NULL COMMENT \'实际成交金额\',\\n  `number` INT NOT NULL COMMENT \'购车数量\',\\n  `phone` VARCHAR(20) NOT NULL \'联系方式\',\\n  `store_location` VARCHAR(100) DEFAULT NULL COMMENT \'提车门店名称\',\\n  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT \'下单时间\',\\n  `pay_time` DATETIME DEFAULT NULL COMMENT \'支付完成时间\',\\n  PRIMARY KEY (`id`),\\n  CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`),\\n  CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`)\\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=\'销售订单表\';\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-20 19:56:45', 15);
-INSERT INTO `sys_oper_log` VALUES (489, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"\\nCREATE TABLE `orders` (\\n  `id` BIGINT NOT NULL COMMENT \'订单编号(建议雪花算法)\',\\n  `user_id` BIGINT NOT NULL COMMENT \'关联购车用户\',\\n  `vehicle_id` BIGINT NOT NULL COMMENT \'关联购车车型\',\\n  `status` INT DEFAULT 0 COMMENT \'0-待付, 1-已付, 2-待提, 3-完成, 4-取消\',\\n  `amount` DECIMAL(12,2) NOT NULL COMMENT \'实际成交金额\',\\n  `number` INT NOT NULL COMMENT \'购车数量\',\\n  `phone` VARCHAR(20) NOT NULL \'联系方式\',\\n  `store_location` VARCHAR(100) DEFAULT NULL COMMENT \'提车门店名称\',\\n  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT \'下单时间\',\\n  `pay_time` DATETIME DEFAULT NULL COMMENT \'支付完成时间\',\\n  PRIMARY KEY (`id`),\\n  CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`),\\n  CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`)\\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=\'销售订单表\';\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-20 19:56:51', 3);
-INSERT INTO `sys_oper_log` VALUES (490, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"CREATE TABLE `orders` (\\n  `id` BIGINT NOT NULL COMMENT \'订单编号(建议雪花算法)\',\\n  `user_id` BIGINT NOT NULL COMMENT \'关联购车用户\',\\n  `vehicle_id` BIGINT NOT NULL COMMENT \'关联购车车型\',\\n  `status` INT DEFAULT 0 COMMENT \'0-待付, 1-已付, 2-待提, 3-完成, 4-取消\',\\n  `amount` DECIMAL(12,2) NOT NULL COMMENT \'实际成交金额\',\\n  `number` INT NOT NULL COMMENT \'购车数量\',\\n  `phone` VARCHAR(20) NOT NULL \'联系方式\',\\n  `store_location` VARCHAR(100) DEFAULT NULL COMMENT \'提车门店名称\',\\n  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT \'下单时间\',\\n  `pay_time` DATETIME DEFAULT NULL COMMENT \'支付完成时间\',\\n  PRIMARY KEY (`id`),\\n  CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`),\\n  CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`)\\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=\'销售订单表\';\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-20 19:56:56', 2);
-INSERT INTO `sys_oper_log` VALUES (491, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"-- --------------------------------------------------\\n-- 4. 订单表 (orders)\\n-- --------------------------------------------------\\nCREATE TABLE `orders` (\\n  `id` BIGINT NOT NULL COMMENT \'订单编号(建议雪花算法)\',\\n  `user_id` BIGINT NOT NULL COMMENT \'关联购车用户\',\\n  `vehicle_id` BIGINT NOT NULL COMMENT \'关联购车车型\',\\n  `status` INT DEFAULT 0 COMMENT \'0-待付, 1-已付, 2-待提, 3-完成, 4-取消\',\\n  `amount` DECIMAL(12,2) NOT NULL COMMENT \'实际成交金额\',\\n  `number` INT NOT NULL COMMENT \'购车数量\',\\n  `phone` VARCHAR(20) NOT NULL \'联系方式\',\\n  `store_location` VARCHAR(100) DEFAULT NULL COMMENT \'提车门店名称\',\\n  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT \'下单时间\',\\n  `pay_time` DATETIME DEFAULT NULL COMMENT \'支付完成时间\',\\n  PRIMARY KEY (`id`),\\n  CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`),\\n  CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`)\\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=\'销售订单表\';\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-20 19:57:15', 3);
-INSERT INTO `sys_oper_log` VALUES (492, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"-- --------------------------------------------------\\n-- 4. 订单表 (orders)\\n-- --------------------------------------------------\\nCREATE TABLE `orders` (\\n  `id` BIGINT NOT NULL COMMENT \'订单编号(建议雪花算法)\',\\n  `user_id` BIGINT NOT NULL COMMENT \'关联购车用户\',\\n  `vehicle_id` BIGINT NOT NULL COMMENT \'关联购车车型\',\\n  `status` INT DEFAULT 0 COMMENT \'0-待付, 1-已付, 2-待提, 3-完成, 4-取消\',\\n  `amount` DECIMAL(12,2) NOT NULL COMMENT \'实际成交金额\',\\n  `number` INT NOT NULL COMMENT \'购车数量\',\\n  `phone` VARCHAR(20) NOT NULL COMMENT \'联系方式\', -- 核心修正：补充 COMMENT 关键字\\n  `store_location` VARCHAR(100) DEFAULT NULL COMMENT \'提车门店名称\',\\n  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT \'下单时间\',\\n  `pay_time` DATETIME DEFAULT NULL COMMENT \'支付完成时间\',\\n  PRIMARY KEY (`id`),\\n  CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`),\\n  CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`)\\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=\'销售订单表\';\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-20 19:57:54', 73);
-INSERT INTO `sys_oper_log` VALUES (493, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"CREATE TABLE `carsale_evaluation`  (\\n  `id` bigint NOT NULL AUTO_INCREMENT COMMENT \'评价唯一标识\',\\n  `order_id` bigint NOT NULL COMMENT \'关联订单\',\\n  `vehicle_id` bigint NOT NULL COMMENT \'关联车型\',\\n  `score` int NULL DEFAULT NULL COMMENT \'评分(1-5星)\',\\n  `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'文字评价内容\',\\n  `images` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'晒单图片URL\',\\n  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'评价发布时间\',\\n  PRIMARY KEY (`id`) USING BTREE,\\n  UNIQUE INDEX `uk_order_id`(`order_id` ASC) USING BTREE,\\n  INDEX `fk_eval_vehicle`(`vehicle_id` ASC) USING BTREE,\\n  CONSTRAINT `fk_eval_order` FOREIGN KEY (`order_id`) REFERENCES `carsale_orders` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\\n  CONSTRAINT `fk_eval_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT\\n) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = \'用户评价表\' ROW_FORMAT = Dynamic;\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-20 22:09:12', 13);
-INSERT INTO `sys_oper_log` VALUES (494, '创建表', 0, 'com.ruoyi.generator.controller.GenController.createTableSave()', 'POST', 1, 'admin', '软件工程', '/tool/gen/createTable', '127.0.0.1', '内网IP', '{\"sql\":\"/*\\n Navicat Premium Data Transfer\\n\\n Source Server         : localhost_3306\\n Source Server Type    : MySQL\\n Source Server Version : 80040 (8.0.40)\\n Source Host           : localhost:3306\\n Source Schema         : ry-vue\\n\\n Target Server Type    : MySQL\\n Target Server Version : 80040 (8.0.40)\\n File Encoding         : 65001\\n\\n Date: 20/01/2026 22:08:48\\n*/\\n\\nSET NAMES utf8mb4;\\nSET FOREIGN_KEY_CHECKS = 0;\\n\\n-- ----------------------------\\n-- Table structure for carsale_evaluation\\n-- ----------------------------\\nDROP TABLE IF EXISTS `carsale_evaluation`;\\nCREATE TABLE `carsale_evaluation`  (\\n  `id` bigint NOT NULL AUTO_INCREMENT COMMENT \'评价唯一标识\',\\n  `order_id` bigint NOT NULL COMMENT \'关联订单\',\\n  `vehicle_id` bigint NOT NULL COMMENT \'关联车型\',\\n  `score` int NULL DEFAULT NULL COMMENT \'评分(1-5星)\',\\n  `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'文字评价内容\',\\n  `images` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT \'晒单图片URL\',\\n  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'评价发布时间\',\\n  PRIMARY KEY (`id`) USING BTREE,\\n  UNIQUE INDEX `uk_order_id`(`order_id` ASC) USING BTREE,\\n  INDEX `fk_eval_vehicle`(`vehicle_id` ASC) USING BTREE,\\n  CONSTRAINT `fk_eval_order` FOREIGN KEY (`order_id`) REFERENCES `carsale_orders` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\\n  CONSTRAINT `fk_eval_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT\\n) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = \'用户评价表\' ROW_FORMAT = Dynamic;\\n\\n-- ----------------------------\\n-- Records of carsale_evaluation\\n-- ----------------------------\\n\\nSET FOREIGN_KEY_CHECKS = 1;\\n\"}', '{\"msg\":\"创建表结构异常\",\"code\":500}', 0, NULL, '2026-01-20 22:09:25', 2);
+INSERT INTO `sys_oper_log` VALUES (487, '用户管理', 1, 'com.ruoyi.web.controller.carsale.AdminUserController.addUser()', 'POST', 1, 'admin', '软件工程', '/carsale/admin/user/add', '127.0.0.1', '内网IP', '{\"address\":\"\",\"admin\":false,\"createBy\":\"admin\",\"idCard\":\"\",\"nickName\":\"user\",\"params\":{},\"phonenumber\":\"13991245952\",\"roleIds\":[104],\"userId\":109,\"userName\":\"user\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 10:18:39', 279);
+INSERT INTO `sys_oper_log` VALUES (488, '试驾预约', 1, 'com.ruoyi.web.controller.carsale.TestdriveController.addTestdrive()', 'POST', 1, 'user', NULL, '/carsale/testdrive/create', '127.0.0.1', '内网IP', '{\"appointTime\":\"2026-01-30 10:24:59\",\"id\":1,\"params\":{},\"status\":0,\"storeName\":\"门店1\",\"userId\":109,\"vehicleId\":6}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 10:25:03', 69);
+INSERT INTO `sys_oper_log` VALUES (489, '试驾审核', 2, 'com.ruoyi.web.controller.carsale.TestdriveController.auditTestdrive()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/testdrive/1/audit', '127.0.0.1', '内网IP', '1 {\"auditRemark\":\"可以\",\"auditTime\":\"2026-01-24 10:25:24\",\"id\":1,\"params\":{},\"status\":1}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 10:25:24', 14);
+INSERT INTO `sys_oper_log` VALUES (490, '订单管理', 1, 'com.ruoyi.web.controller.carsale.OrdersController.addOrder()', 'POST', 1, 'user', NULL, '/carsale/order/create', '127.0.0.1', '内网IP', '{\"amount\":215900.0,\"id\":1769221564341,\"number\":1,\"params\":{},\"phone\":\"13991245952\",\"status\":0,\"storeLocation\":\"门店1\",\"userId\":109,\"vehicleId\":9}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 10:26:04', 47);
+INSERT INTO `sys_oper_log` VALUES (491, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.payOrder()', 'PUT', 1, 'user', NULL, '/carsale/order/pay/1769221564341', '127.0.0.1', '内网IP', '{\"{}\":\"\"}', NULL, 1, '\r\n### Error updating database.  Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value: \'Sat Jan 24 10:45:17 CST 2026\' for column \'pay_time\' at row 1\r\n### The error may exist in file [C:\\Users\\hag\\Desktop\\17\\数据库大作业\\carsale\\新能源汽车销售系统\\ruoyi-carsale\\target\\classes\\mapper\\carsale\\OrdersMapper.xml]\r\n### The error may involve com.ruoyi.carsale.mapper.OrdersMapper.updateOrders-Inline\r\n### The error occurred while setting parameters\r\n### SQL: update carsale_orders          SET id = ?,                                           user_id = ?,                                           vehicle_id = ?,                                           status = ?,                                           amount = ?,                                           number = ?,                                           phone = ?,                                           store_location = ?,                                                        pay_time = ?          where id = ?\r\n### Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value: \'Sat Jan 24 10:45:17 CST 2026\' for column \'pay_time\' at row 1\n; Data truncation: Incorrect datetime value: \'Sat Jan 24 10:45:17 CST 2026\' for column \'pay_time\' at row 1; nested exception is com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value: \'Sat Jan 24 10:45:17 CST 2026\' for column \'pay_time\' at row 1', '2026-01-24 10:45:17', 129);
+INSERT INTO `sys_oper_log` VALUES (492, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.payOrder()', 'PUT', 1, 'user', NULL, '/carsale/order/pay/1769221564341', '127.0.0.1', '内网IP', '{\"{}\":\"\"}', NULL, 1, '\r\n### Error updating database.  Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value: \'Sat Jan 24 10:45:26 CST 2026\' for column \'pay_time\' at row 1\r\n### The error may exist in file [C:\\Users\\hag\\Desktop\\17\\数据库大作业\\carsale\\新能源汽车销售系统\\ruoyi-carsale\\target\\classes\\mapper\\carsale\\OrdersMapper.xml]\r\n### The error may involve com.ruoyi.carsale.mapper.OrdersMapper.updateOrders-Inline\r\n### The error occurred while setting parameters\r\n### SQL: update carsale_orders          SET id = ?,                                           user_id = ?,                                           vehicle_id = ?,                                           status = ?,                                           amount = ?,                                           number = ?,                                           phone = ?,                                           store_location = ?,                                                        pay_time = ?          where id = ?\r\n### Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value: \'Sat Jan 24 10:45:26 CST 2026\' for column \'pay_time\' at row 1\n; Data truncation: Incorrect datetime value: \'Sat Jan 24 10:45:26 CST 2026\' for column \'pay_time\' at row 1; nested exception is com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Incorrect datetime value: \'Sat Jan 24 10:45:26 CST 2026\' for column \'pay_time\' at row 1', '2026-01-24 10:45:26', 16);
+INSERT INTO `sys_oper_log` VALUES (493, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.payOrder()', 'PUT', 1, 'user', NULL, '/carsale/order/pay/1769221564341', '127.0.0.1', '内网IP', '{\"{}\":\"\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 10:47:42', 121);
+INSERT INTO `sys_oper_log` VALUES (494, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.updateOrderStatus()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/order/status/update', '127.0.0.1', '内网IP', '{\"amount\":null,\"id\":202601130001,\"params\":{},\"pickupTime\":\"2026-01-24 10:48:22\",\"status\":2}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 10:48:22', 20);
+INSERT INTO `sys_oper_log` VALUES (495, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.updateOrderStatus()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/order/status/update', '127.0.0.1', '内网IP', '{\"amount\":null,\"id\":1769221564341,\"params\":{},\"status\":2}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:07:36', 22);
+INSERT INTO `sys_oper_log` VALUES (496, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.updateOrderStatus()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/order/status/update', '127.0.0.1', '内网IP', '{\"amount\":null,\"id\":1769221564341,\"params\":{},\"pickupTime\":\"2026-01-24 11:08:18\",\"status\":3}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:08:18', 11);
+INSERT INTO `sys_oper_log` VALUES (497, '评价管理', 1, 'com.ruoyi.web.controller.carsale.EvaluationController.addEvaluation()', 'POST', 1, 'user', NULL, '/carsale/evaluation/create', '127.0.0.1', '内网IP', '{\"comment\":\"好\",\"id\":1,\"orderId\":1769221564341,\"params\":{},\"score\":5,\"userId\":109,\"vehicleId\":9}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:11:07', 46);
+INSERT INTO `sys_oper_log` VALUES (498, '订单管理', 1, 'com.ruoyi.web.controller.carsale.OrdersController.addOrder()', 'POST', 1, 'user', NULL, '/carsale/order/create', '127.0.0.1', '内网IP', '{\"amount\":215900.0,\"id\":1769224584373,\"number\":1,\"params\":{},\"phone\":\"13991245952\",\"status\":0,\"storeLocation\":\"上海中心门店\",\"userId\":109,\"vehicleId\":6}', '{\"msg\":\"操作成功\",\"code\":200,\"data\":{\"amount\":215900.0,\"id\":1769224584373,\"number\":1,\"params\":{},\"phone\":\"13991245952\",\"status\":0,\"storeLocation\":\"上海中心门店\",\"userId\":109,\"vehicleId\":6}}', 0, NULL, '2026-01-24 11:16:24', 175);
+INSERT INTO `sys_oper_log` VALUES (499, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.payOrder()', 'PUT', 1, 'user', NULL, '/carsale/order/pay/1769224584373', '127.0.0.1', '内网IP', '{\"{}\":\"\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:16:27', 39);
+INSERT INTO `sys_oper_log` VALUES (500, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.updateOrderStatus()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/order/status/update', '127.0.0.1', '内网IP', '{\"amount\":null,\"id\":1769224584373,\"params\":{},\"status\":2}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:16:46', 14);
+INSERT INTO `sys_oper_log` VALUES (501, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.updateOrderStatus()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/order/status/update', '127.0.0.1', '内网IP', '{\"amount\":null,\"id\":1769224584373,\"params\":{},\"pickupTime\":\"2026-01-24 11:17:34\",\"status\":3}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:17:34', 21);
+INSERT INTO `sys_oper_log` VALUES (502, '评价管理', 1, 'com.ruoyi.web.controller.carsale.EvaluationController.addEvaluation()', 'POST', 1, 'user', NULL, '/carsale/evaluation/create', '127.0.0.1', '内网IP', '{\"comment\":\"好好好\",\"id\":2,\"images\":\"[\\\"https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/face_default_m_20260124112328A003.jpg\\\"]\",\"orderId\":1769224584373,\"params\":{},\"score\":5,\"userId\":109,\"vehicleId\":6}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:23:33', 36);
+INSERT INTO `sys_oper_log` VALUES (503, '订单管理', 1, 'com.ruoyi.web.controller.carsale.OrdersController.addOrder()', 'POST', 1, 'user', NULL, '/carsale/order/create', '127.0.0.1', '内网IP', '{\"amount\":215900.0,\"id\":1769225278509,\"number\":1,\"params\":{},\"phone\":\"13991245952\",\"status\":0,\"storeLocation\":\"深圳南山门店\",\"userId\":109,\"vehicleId\":6}', '{\"msg\":\"操作成功\",\"code\":200,\"data\":{\"amount\":215900.0,\"id\":1769225278509,\"number\":1,\"params\":{},\"phone\":\"13991245952\",\"status\":0,\"storeLocation\":\"深圳南山门店\",\"userId\":109,\"vehicleId\":6}}', 0, NULL, '2026-01-24 11:27:58', 23);
+INSERT INTO `sys_oper_log` VALUES (504, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.payOrder()', 'PUT', 1, 'user', NULL, '/carsale/order/pay/1769225278509', '127.0.0.1', '内网IP', '{\"{}\":\"\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:28:00', 38);
+INSERT INTO `sys_oper_log` VALUES (505, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.updateOrderStatus()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/order/status/update', '127.0.0.1', '内网IP', '{\"amount\":null,\"id\":1769225278509,\"params\":{},\"status\":2}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:28:18', 17);
+INSERT INTO `sys_oper_log` VALUES (506, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.updateOrderStatus()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/order/status/update', '127.0.0.1', '内网IP', '{\"amount\":null,\"id\":1769225278509,\"params\":{},\"pickupTime\":\"2026-01-24 11:28:20\",\"status\":3}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:28:20', 26);
+INSERT INTO `sys_oper_log` VALUES (507, '评价管理', 1, 'com.ruoyi.web.controller.carsale.EvaluationController.addEvaluation()', 'POST', 1, 'user', NULL, '/carsale/evaluation/create', '127.0.0.1', '内网IP', '{\"comment\":\"非常好\",\"id\":3,\"images\":\"[\\\"https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/微信图片_20211210175704_20260124112854A001.jpg\\\"]\",\"orderId\":1769225278509,\"params\":{},\"score\":5,\"userId\":109,\"vehicleId\":6}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 11:28:58', 30);
+INSERT INTO `sys_oper_log` VALUES (508, '促销活动管理', 1, 'com.ruoyi.web.controller.carsale.PromotionController.addPromotion()', 'POST', 1, 'admin', '软件工程', '/carsale/admin/promotion/add', '127.0.0.1', '内网IP', '{\"discountType\":0,\"discountValue\":10000.0,\"endTime\":\"2026-01-31 15:40:14\",\"params\":{},\"startTime\":\"2026-01-24 15:40:13\",\"status\":1,\"title\":\"活动汉EV\",\"vehicleId\":8}', NULL, 1, '', '2026-01-24 15:40:18', 20);
+INSERT INTO `sys_oper_log` VALUES (509, '促销活动管理', 1, 'com.ruoyi.web.controller.carsale.PromotionController.addPromotion()', 'POST', 1, 'admin', '软件工程', '/carsale/admin/promotion/add', '127.0.0.1', '内网IP', '{\"discountType\":0,\"discountValue\":10000.0,\"endTime\":\"2026-01-31 15:40:14\",\"params\":{},\"startTime\":\"2026-01-24 15:40:13\",\"status\":1,\"title\":\"活动汉EV\",\"vehicleId\":8}', NULL, 1, '', '2026-01-24 15:40:18', 2);
+INSERT INTO `sys_oper_log` VALUES (510, '促销活动管理', 1, 'com.ruoyi.web.controller.carsale.PromotionController.addPromotion()', 'POST', 1, 'admin', '软件工程', '/carsale/admin/promotion/add', '127.0.0.1', '内网IP', '{\"discountType\":0,\"discountValue\":10000.0,\"endTime\":\"2026-01-31 15:40:14\",\"params\":{},\"startTime\":\"2026-01-24 15:40:13\",\"status\":1,\"title\":\"活动汉EV\",\"vehicleId\":8}', NULL, 1, '', '2026-01-24 15:40:24', 1);
+INSERT INTO `sys_oper_log` VALUES (511, '车辆管理', 1, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.addVehicle()', 'POST', 1, 'admin', '软件工程', '/carsale/admin/vehicle/add', '127.0.0.1', '内网IP', '{\"batteryType\":0,\"brand\":\"品牌1\",\"configJson\":\"{\\\"fast_charge\\\":\\\"0.5h\\\",\\\"ai_level\\\":\\\"L2\\\"}\",\"description\":\"111\",\"id\":10,\"imageUrl\":\"https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/小米su7_20260124161130A001.png\",\"launchDate\":\"2026-01-24\",\"maxPrice\":null,\"minPrice\":null,\"name\":\"车型1\",\"params\":{},\"price\":10000.0,\"rangeKm\":10000,\"stock\":100}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 16:11:33', 32);
+INSERT INTO `sys_oper_log` VALUES (512, '促销活动管理', 1, 'com.ruoyi.web.controller.carsale.PromotionController.addPromotion()', 'POST', 1, 'admin', '软件工程', '/carsale/admin/promotion/add', '127.0.0.1', '内网IP', '{\"discountType\":0,\"discountValue\":10000.0,\"endTime\":\"2026-01-31 16:14:19\",\"params\":{},\"startTime\":\"2026-01-24 16:14:18\",\"status\":1,\"title\":\"活动1\",\"vehicleId\":10}', NULL, 1, '', '2026-01-24 16:14:22', 7);
+INSERT INTO `sys_oper_log` VALUES (513, '促销活动管理', 1, 'com.ruoyi.web.controller.carsale.PromotionController.addPromotion()', 'POST', 1, 'admin', '软件工程', '/carsale/admin/promotion/add', '127.0.0.1', '内网IP', '{\"discountType\":0,\"discountValue\":10000.0,\"endTime\":\"2026-01-31 16:14:19\",\"params\":{},\"startTime\":\"2026-01-24 16:14:18\",\"status\":1,\"title\":\"活动1\",\"vehicleId\":10}', NULL, 1, '', '2026-01-24 16:14:30', 0);
+INSERT INTO `sys_oper_log` VALUES (514, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/6,5,4,3,2,1', '127.0.0.1', '内网IP', '{}', NULL, 1, '\r\n### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_orders`, CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)\r\n### The error may exist in file [C:\\Users\\hag\\Desktop\\17\\数据库大作业\\carsale\\新能源汽车销售系统\\ruoyi-carsale\\target\\classes\\mapper\\carsale\\AdminVehicleManageMapper.xml]\r\n### The error may involve com.ruoyi.carsale.mapper.AdminVehicleManageMapper.deleteVehicleByIds-Inline\r\n### The error occurred while setting parameters\r\n### SQL: delete from carsale_vehicle where id in          (               ?          ,              ?          ,              ?          ,              ?          ,              ?          ,              ?          )\r\n### Cause: java.sql.SQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_orders`, CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)\n; Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_orders`, CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT); nested exception is java.sql.SQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_orders`, CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)', '2026-01-24 16:22:33', 575);
+INSERT INTO `sys_oper_log` VALUES (515, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/6,5,4,3,2,1', '127.0.0.1', '内网IP', '{}', NULL, 1, '\r\n### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_orders`, CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)\r\n### The error may exist in file [C:\\Users\\hag\\Desktop\\17\\数据库大作业\\carsale\\新能源汽车销售系统\\ruoyi-carsale\\target\\classes\\mapper\\carsale\\AdminVehicleManageMapper.xml]\r\n### The error may involve com.ruoyi.carsale.mapper.AdminVehicleManageMapper.deleteVehicleByIds-Inline\r\n### The error occurred while setting parameters\r\n### SQL: delete from carsale_vehicle where id in          (               ?          ,              ?          ,              ?          ,              ?          ,              ?          ,              ?          )\r\n### Cause: java.sql.SQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_orders`, CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)\n; Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_orders`, CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT); nested exception is java.sql.SQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_orders`, CONSTRAINT `fk_order_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)', '2026-01-24 16:22:42', 49);
+INSERT INTO `sys_oper_log` VALUES (516, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/6', '127.0.0.1', '内网IP', '{}', NULL, 1, '\r\n### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_evaluation`, CONSTRAINT `fk_eval_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)\r\n### The error may exist in file [C:\\Users\\hag\\Desktop\\17\\数据库大作业\\carsale\\新能源汽车销售系统\\ruoyi-carsale\\target\\classes\\mapper\\carsale\\AdminVehicleManageMapper.xml]\r\n### The error may involve com.ruoyi.carsale.mapper.AdminVehicleManageMapper.deleteVehicleByIds-Inline\r\n### The error occurred while setting parameters\r\n### SQL: delete from carsale_vehicle where id in          (               ?          )\r\n### Cause: java.sql.SQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_evaluation`, CONSTRAINT `fk_eval_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)\n; Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_evaluation`, CONSTRAINT `fk_eval_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT); nested exception is java.sql.SQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`ry-vue`.`carsale_evaluation`, CONSTRAINT `fk_eval_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `carsale_vehicle` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)', '2026-01-24 16:23:40', 17);
+INSERT INTO `sys_oper_log` VALUES (517, '订单管理', 2, 'com.ruoyi.web.controller.carsale.OrdersController.updateOrderStatus()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/order/status/update', '127.0.0.1', '内网IP', '{\"amount\":null,\"id\":202601130001,\"params\":{},\"pickupTime\":\"2026-01-24 16:23:59\",\"status\":3}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 16:23:59', 48);
+INSERT INTO `sys_oper_log` VALUES (518, '促销活动管理', 1, 'com.ruoyi.web.controller.carsale.PromotionController.addPromotion()', 'POST', 1, 'admin', '软件工程', '/carsale/admin/promotion/add', '127.0.0.1', '内网IP', '{\"discountType\":0,\"discountValue\":1000.0,\"endTime\":\"2026-01-31 16:24:54\",\"params\":{},\"startTime\":\"2026-01-24 16:24:53\",\"status\":1,\"title\":\"活动1\",\"vehicleId\":10}', NULL, 1, '', '2026-01-24 16:24:57', 13);
+INSERT INTO `sys_oper_log` VALUES (519, '促销活动管理', 1, 'com.ruoyi.web.controller.carsale.PromotionController.addPromotion()', 'POST', 1, 'admin', '软件工程', '/carsale/admin/promotion/add', '127.0.0.1', '内网IP', '{\"discountType\":0,\"discountValue\":1000.0,\"endTime\":\"2026-01-31 16:27:36\",\"id\":4,\"params\":{},\"startTime\":\"2026-01-24 16:27:44\",\"status\":1,\"title\":\"活动1\",\"vehicleId\":10}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 16:27:48', 189);
+INSERT INTO `sys_oper_log` VALUES (520, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/6,5,4,3,2,1', '127.0.0.1', '内网IP', '{}', NULL, 1, '车辆【SU7】存在 2 个关联订单，无法删除。请先处理相关订单后再删除车辆。', '2026-01-24 17:21:08', 22);
+INSERT INTO `sys_oper_log` VALUES (521, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/5,4,3,2,1', '127.0.0.1', '内网IP', '{}', NULL, 1, '车辆【Model 3】存在 1 个关联订单，无法删除。请先处理相关订单后再删除车辆。', '2026-01-24 17:21:14', 20);
+INSERT INTO `sys_oper_log` VALUES (522, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/5,3,2', '127.0.0.1', '内网IP', '{}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 17:21:25', 36);
+INSERT INTO `sys_oper_log` VALUES (523, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/4', '127.0.0.1', '内网IP', '{}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 17:21:32', 15);
+INSERT INTO `sys_oper_log` VALUES (524, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/7', '127.0.0.1', '内网IP', '{}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 17:21:38', 14);
+INSERT INTO `sys_oper_log` VALUES (525, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/9', '127.0.0.1', '内网IP', '{}', NULL, 1, '车辆【SU7】存在 1 个关联订单，无法删除。请先处理相关订单后再删除车辆。', '2026-01-24 17:21:42', 3);
+INSERT INTO `sys_oper_log` VALUES (526, '车辆管理', 3, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.deleteVehicle()', 'DELETE', 1, 'admin', '软件工程', '/carsale/admin/vehicle/delete/6', '127.0.0.1', '内网IP', '{}', NULL, 1, '车辆【SU7】存在 2 个关联订单，无法删除。请先处理相关订单后再删除车辆。', '2026-01-24 17:21:45', 7);
+INSERT INTO `sys_oper_log` VALUES (527, '车辆管理', 2, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.updateVehicle()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/vehicle/update', '127.0.0.1', '内网IP', '{\"batteryType\":2,\"brand\":\"Xiaomi\",\"configJson\":\"{\\\"fast_charge\\\":\\\"0.35h\\\",\\\"ai_level\\\":\\\"L3\\\"}\",\"id\":9,\"imageUrl\":\"https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/小米su7_20260124172804A001.png\",\"launchDate\":\"2024-03-28\",\"maxPrice\":null,\"minPrice\":null,\"name\":\"SU7\",\"params\":{},\"price\":215900.0,\"rangeKm\":700,\"stock\":2}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 17:28:06', 33);
+INSERT INTO `sys_oper_log` VALUES (528, '车辆管理', 2, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.updateVehicle()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/vehicle/update', '127.0.0.1', '内网IP', '{\"batteryType\":1,\"brand\":\"BYD\",\"configJson\":\"{\\\"fast_charge\\\":\\\"0.42h\\\",\\\"ai_level\\\":\\\"L2\\\"}\",\"id\":8,\"imageUrl\":\"https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/比亚迪汉EV_20260124172816A002.png\",\"launchDate\":\"2023-03-20\",\"maxPrice\":null,\"minPrice\":null,\"name\":\"汉 EV\",\"params\":{},\"price\":221800.0,\"rangeKm\":715,\"stock\":3}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 17:28:18', 7);
+INSERT INTO `sys_oper_log` VALUES (529, '车辆管理', 2, 'com.ruoyi.web.controller.carsale.AdminVehicleManageController.updateVehicle()', 'PUT', 1, 'admin', '软件工程', '/carsale/admin/vehicle/update', '127.0.0.1', '内网IP', '{\"batteryType\":0,\"brand\":\"Tesla\",\"configJson\":\"{\\\"fast_charge\\\":\\\"0.5h\\\",\\\"ai_level\\\":\\\"L2\\\"}\",\"id\":1,\"imageUrl\":\"https://sky-bucket-for-zdp.oss-cn-beijing.aliyuncs.com/vehicle/2026/01/24/Tesla Model_20260124172832A003.png\",\"launchDate\":\"2023-09-01\",\"maxPrice\":null,\"minPrice\":null,\"name\":\"Model 3\",\"params\":{},\"price\":258900.0,\"rangeKm\":606,\"stock\":12}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2026-01-24 17:28:33', 9);
 
 -- ----------------------------
 -- Table structure for sys_post
@@ -2056,7 +2404,7 @@ CREATE TABLE `sys_role`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`role_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 104 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色信息表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 105 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_role
@@ -2067,6 +2415,7 @@ INSERT INTO `sys_role` VALUES (100, 'test', 'system:test', 0, '1', 1, 1, '0', '2
 INSERT INTO `sys_role` VALUES (101, '论文系统管理员', 'ROLE_ADMIN', 3, '1', 1, 1, '0', '2', 'admin', '2024-07-02 16:01:44', '', NULL, NULL);
 INSERT INTO `sys_role` VALUES (102, '教师', 'teacher', 2, '1', 0, 0, '0', '0', 'admin', '2024-07-03 11:54:35', 'admin', '2026-01-15 23:35:56', NULL);
 INSERT INTO `sys_role` VALUES (103, '论文管理员', 'platform:admin', 1, '1', 0, 0, '0', '0', 'admin', '2024-07-09 15:38:45', 'admin', '2026-01-15 23:35:55', NULL);
+INSERT INTO `sys_role` VALUES (104, '普通用户', 'customer', 4, '1', 0, 0, '0', '0', 'admin', '2026-01-22 18:11:33', '', NULL, '购车客户角色');
 
 -- ----------------------------
 -- Table structure for sys_role_dept
@@ -2171,7 +2520,6 @@ CREATE TABLE `sys_user`  (
   `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '用户邮箱',
   `phonenumber` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '手机号码',
   `sex` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '用户性别（0男 1女 2未知）',
-  `avatar` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '头像地址',
   `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '密码',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '帐号状态（0正常 1停用）',
   `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
@@ -2182,28 +2530,29 @@ CREATE TABLE `sys_user`  (
   `update_by` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '更新者',
   `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '备注',
-  `role` int NULL DEFAULT NULL COMMENT '角色：0-普通用户，1-管理员',
+  `real_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '真实姓名',
   `id_card` varchar(18) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '身份证号',
-  `address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '收货/联系地址',
-  `real_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '真实姓名',
+  `address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '收获/联系地址',
+  `role` int NULL DEFAULT NULL COMMENT '角色：0-普通用户；1-管理员',
+  `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户头像路径',
   PRIMARY KEY (`user_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 110 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 103, 'admin', '若依', '00', 'ry@163.com', '15888888888', '1', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '0', '127.0.0.1', '2026-01-22 00:06:09', 'admin', '2024-06-29 09:22:56', '', '2026-01-22 00:06:08', '管理员', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (2, 103, 'ry', '王老师', '00', 'ry@qq.com', '15666666666', '1', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '2', '127.0.0.1', '2024-06-29 09:22:56', 'admin', '2024-06-29 09:22:56', 'admin', '2024-07-03 11:56:45', '', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (100, NULL, 'test', 'test', '00', '', '', '0', '', '$2a$10$0V6b0uzM0kUGwIb.BCk1YekLyRy6KSE22Rxzm4Mx1nU1nBMz6kJ9u', '0', '2', '127.0.0.1', '2024-07-02 16:14:51', 'admin', '2024-06-29 09:50:41', '', '2024-07-02 16:14:51', NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (101, NULL, 'sysAdmin', 'admin', '00', '', '', '0', '', '$2a$10$ROeTcvC9NicHhJIORm2q0.DjL31mi/9/S/Tl6hh78XvnUBUCFE60a', '0', '2', '127.0.0.1', '2024-07-03 10:56:07', 'admin', '2024-07-02 16:06:41', 'admin', '2024-07-03 10:56:06', NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (102, 103, '王老师', '王老师', '00', '', '', '0', '', '$2a$10$8oWt7saXkqCStsvp8kiNZO2GW6Jzh8rFwuDnT3MYg7i7ujuFTTHay', '0', '0', '127.0.0.1', '2024-07-09 15:57:58', 'admin', '2024-07-03 12:00:11', 'admin', '2024-07-09 15:57:58', NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (103, 103, '张三', '张三', '00', '', '', '0', '', '$2a$10$XR7CzZfqWDIJ9ub0eFdvJOTrEXL9MR6bf93/qwPrZB78U9k0ctBXu', '0', '0', '127.0.0.1', '2024-07-05 08:53:04', 'admin', '2024-07-03 12:00:43', '', '2024-07-05 08:53:03', NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (104, 105, '李四', '李四', '00', '', '', '0', '', '$2a$10$dmWmHlqvQgNcPhrRdBbUxeNQp3GX3JK15u3NuAc0O0NxD4xQgRFCK', '0', '0', '127.0.0.1', '2024-07-09 16:42:03', 'admin', '2024-07-03 13:16:33', '', '2024-07-09 16:42:02', NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (105, 105, '李老师', '李老师', '00', '', '13685210584', '1', '', '$2a$10$SLmUtnuVDuR.n2Ac7YyeNuVm5c.iBliZ5MbjhZbhjLJGHYmYDDSHW', '0', '0', '127.0.0.1', '2024-07-05 16:38:08', 'admin', '2024-07-05 16:31:44', '', '2024-07-05 16:38:07', NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (106, 105, '王五', '王五', '00', '', '', '0', '', '$2a$10$.YC5r33ANUwkpCdHRFaybuyj7zz9lTE3ZVf8U3fHHKbnUSwtwumiu', '0', '0', '', NULL, 'admin', '2024-07-09 15:31:22', '', NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (107, 103, '张老师', '张老师', '00', '', '', '1', '', '$2a$10$ASWMnGqiVnIftKysnOHDVOJEUi8JFHfw0wL7jIZUfld1WRKZqPjHO', '0', '0', '127.0.0.1', '2024-07-09 16:39:10', 'admin', '2024-07-09 15:32:55', '', '2024-07-09 16:39:09', NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (108, 101, 'plat_admin', '平台管理员', '00', '', '', '0', '', '$2a$10$/2o2sKcB/5aID3m2Kr65dumxt9p3iB3RkFoHOLzJtLiG4cxqHxKY.', '0', '0', '127.0.0.1', '2024-07-09 15:58:27', 'admin', '2024-07-09 15:40:03', '', '2024-07-09 15:58:27', NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_user` VALUES (109, 100, 'if', 'if', '00', '', '', '2', '', '$2a$10$d3scOi9fBoYkdDCmWNoAyuZ.5AjoR7cHUx03qutXHQKti4B9vFkaS', '0', '0', '', NULL, 'admin', '2026-01-20 18:18:36', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (1, 103, 'admin', '若依', '00', 'ry@163.com', '15888888888', '1', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '0', '127.0.0.1', '2026-01-24 17:27:25', 'admin', '2024-06-29 09:22:56', '', '2026-01-24 17:27:25', '管理员', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (2, 103, 'ry', '王老师', '00', 'ry@qq.com', '15666666666', '1', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '2', '127.0.0.1', '2024-06-29 09:22:56', 'admin', '2024-06-29 09:22:56', 'admin', '2024-07-03 11:56:45', '', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (100, NULL, 'test', 'test', '00', '', '', '0', '$2a$10$0V6b0uzM0kUGwIb.BCk1YekLyRy6KSE22Rxzm4Mx1nU1nBMz6kJ9u', '0', '2', '127.0.0.1', '2024-07-02 16:14:51', 'admin', '2024-06-29 09:50:41', '', '2024-07-02 16:14:51', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (101, NULL, 'sysAdmin', 'admin', '00', '', '', '0', '$2a$10$ROeTcvC9NicHhJIORm2q0.DjL31mi/9/S/Tl6hh78XvnUBUCFE60a', '0', '2', '127.0.0.1', '2024-07-03 10:56:07', 'admin', '2024-07-02 16:06:41', 'admin', '2024-07-03 10:56:06', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (102, 103, '王老师', '王老师', '00', '', '', '0', '$2a$10$8oWt7saXkqCStsvp8kiNZO2GW6Jzh8rFwuDnT3MYg7i7ujuFTTHay', '0', '0', '127.0.0.1', '2024-07-09 15:57:58', 'admin', '2024-07-03 12:00:11', 'admin', '2024-07-09 15:57:58', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (103, 103, '张三', '张三', '00', '', '', '0', '$2a$10$XR7CzZfqWDIJ9ub0eFdvJOTrEXL9MR6bf93/qwPrZB78U9k0ctBXu', '0', '0', '127.0.0.1', '2024-07-05 08:53:04', 'admin', '2024-07-03 12:00:43', '', '2024-07-05 08:53:03', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (104, 105, '李四', '李四', '00', '', '', '0', '$2a$10$dmWmHlqvQgNcPhrRdBbUxeNQp3GX3JK15u3NuAc0O0NxD4xQgRFCK', '0', '0', '127.0.0.1', '2024-07-09 16:42:03', 'admin', '2024-07-03 13:16:33', '', '2024-07-09 16:42:02', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (105, 105, '李老师', '李老师', '00', '', '13685210584', '1', '$2a$10$SLmUtnuVDuR.n2Ac7YyeNuVm5c.iBliZ5MbjhZbhjLJGHYmYDDSHW', '0', '0', '127.0.0.1', '2024-07-05 16:38:08', 'admin', '2024-07-05 16:31:44', '', '2024-07-05 16:38:07', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (106, 105, '王五', '王五', '00', '', '', '0', '$2a$10$.YC5r33ANUwkpCdHRFaybuyj7zz9lTE3ZVf8U3fHHKbnUSwtwumiu', '0', '0', '', NULL, 'admin', '2024-07-09 15:31:22', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (107, 103, '张老师', '张老师', '00', '', '', '1', '$2a$10$ASWMnGqiVnIftKysnOHDVOJEUi8JFHfw0wL7jIZUfld1WRKZqPjHO', '0', '0', '127.0.0.1', '2024-07-09 16:39:10', 'admin', '2024-07-09 15:32:55', '', '2024-07-09 16:39:09', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (108, 101, 'plat_admin', '平台管理员', '00', '', '', '0', '$2a$10$/2o2sKcB/5aID3m2Kr65dumxt9p3iB3RkFoHOLzJtLiG4cxqHxKY.', '0', '0', '127.0.0.1', '2024-07-09 15:58:27', 'admin', '2024-07-09 15:40:03', '', '2024-07-09 15:58:27', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (109, NULL, 'user', 'user', '00', '', '13991245952', '0', '$2a$10$Bigh9c.QdP3NyMYWS55yQuXb9YDOi6KPjmb9hEjA.4g6fxtuGEJ36', '0', '0', '127.0.0.1', '2026-01-24 17:28:56', 'admin', '2026-01-24 10:18:39', '', '2026-01-24 17:28:56', NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- ----------------------------
 -- Table structure for sys_user_post
@@ -2245,6 +2594,7 @@ INSERT INTO `sys_user_role` VALUES (105, 102);
 INSERT INTO `sys_user_role` VALUES (106, 2);
 INSERT INTO `sys_user_role` VALUES (107, 102);
 INSERT INTO `sys_user_role` VALUES (108, 103);
+INSERT INTO `sys_user_role` VALUES (109, 104);
 
 -- ----------------------------
 -- Table structure for vehicle
@@ -2263,7 +2613,7 @@ CREATE TABLE `vehicle`  (
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '车辆详情描述',
   `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '车辆封面图片路径',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车辆信息基础表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of vehicle
