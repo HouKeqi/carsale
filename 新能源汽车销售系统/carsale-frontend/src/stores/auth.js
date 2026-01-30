@@ -6,9 +6,12 @@ import { message } from 'ant-design-vue'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: getToken(),
+    userId: null,
     name: '',
     avatar: '',
-    roles: []
+    roles: [],
+    wsClient: null, // WebSocket 客户端实例
+    wsInitialized: false // WebSocket 是否已初始化
   }),
 
   getters: {
@@ -34,6 +37,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const res = await getInfo()
         const { user, roles } = res
+        this.userId = user.userId
         this.name = user.userName
         this.avatar = user.avatar || ''
         this.roles = roles
@@ -46,8 +50,16 @@ export const useAuthStore = defineStore('auth', {
     // 登出
     async logout() {
       try {
+        // 关闭 WebSocket 连接
+        if (this.wsClient) {
+          this.wsClient.close()
+          this.wsClient = null
+        }
+        this.wsInitialized = false
+        
         await logoutApi()
         this.token = ''
+        this.userId = null
         this.name = ''
         this.avatar = ''
         this.roles = []
@@ -55,7 +67,13 @@ export const useAuthStore = defineStore('auth', {
         return Promise.resolve()
       } catch (error) {
         // 即使登出接口失败，也清除本地状态
+        if (this.wsClient) {
+          this.wsClient.close()
+          this.wsClient = null
+        }
+        this.wsInitialized = false
         this.token = ''
+        this.userId = null
         this.name = ''
         this.avatar = ''
         this.roles = []
@@ -66,7 +84,13 @@ export const useAuthStore = defineStore('auth', {
 
     // 重置状态
     resetState() {
+      if (this.wsClient) {
+        this.wsClient.close()
+        this.wsClient = null
+      }
+      this.wsInitialized = false
       this.token = ''
+      this.userId = null
       this.name = ''
       this.avatar = ''
       this.roles = []

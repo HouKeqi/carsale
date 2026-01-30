@@ -49,6 +49,14 @@ public class OrdersController extends BaseController
         if (orders.getId() == null) {
             orders.setId(System.currentTimeMillis());
         }
+        
+        // 金融方案相关字段已经从前端传入，包括：
+        // - financePlanId: 金融方案ID
+        // - originalPrice: 原价
+        // - discountAmount: 折扣金额
+        // - downPayment: 首付金额
+        // 这些字段会自动保存到数据库
+        
         int result = ordersService.insertOrders(orders);
         if (result > 0) {
             // 返回订单对象，包含订单ID

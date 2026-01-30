@@ -49,9 +49,14 @@
                     {{ formatDiscountType(promo.discountType) }}
                   </a-tag>
                 </a-descriptions-item>
-                <a-descriptions-item label="优惠金额">
+                <a-descriptions-item :label="promo.discountType === 0 ? '优惠金额' : '优惠内容'">
                   <span style="color: #ff4d4f; font-weight: bold; font-size: 16px">
-                    {{ formatDiscountValue(promo.discountType, promo.discountValue) }}
+                    <span v-if="promo.discountType === 0">
+                      ¥{{ formatPrice(promo.discountAmount || promo.discountValue) }}
+                    </span>
+                    <span v-else>
+                      {{ promo.description || formatDiscountValue(promo.discountType, promo.discountValue) }}
+                    </span>
                   </span>
                 </a-descriptions-item>
                 <a-descriptions-item label="活动时间">
@@ -63,6 +68,15 @@
           <a-space>
             <a-button type="primary" size="large" @click="handleOrder">立即下单</a-button>
             <a-button type="default" size="large" @click="handleTestDrive">预约试驾</a-button>
+            <a-button 
+              v-if="vehicle.stock === 0" 
+              type="dashed" 
+              size="large" 
+              @click="handleSubscribeStock"
+              :loading="subscribeLoading"
+            >
+              {{ isSubscribed ? '已订阅库存提醒' : '订阅库存提醒' }}
+            </a-button>
           </a-space>
         </a-col>
       </a-row>
@@ -85,6 +99,56 @@
       <div v-if="vehicle.description">
         <h3>车辆描述</h3>
         <p>{{ vehicle.description }}</p>
+      </div>
+      <a-divider />
+      <!-- 推荐车型 -->
+      <div v-if="recommendedVehicles && recommendedVehicles.length > 0">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px">
+          <h3 style="margin: 0">为您推荐</h3>
+          <span style="color: #999; font-size: 12px">基于您的浏览记录智能推荐</span>
+        </div>
+        <a-row :gutter="16">
+          <a-col :span="6" v-for="recVehicle in recommendedVehicles" :key="recVehicle.id">
+            <a-card
+              hoverable
+              :style="{ cursor: 'pointer', height: '100%' }"
+              @click="handleDetail(recVehicle.id)"
+            >
+              <template #cover>
+                <div style="position: relative; width: 100%; height: 180px; overflow: hidden">
+                  <img
+                    :alt="recVehicle.name"
+                    :src="recVehicle.imageUrl || '/default-vehicle.jpg'"
+                    style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s"
+                    @mouseenter="$event.target.style.transform = 'scale(1.1)'"
+                    @mouseleave="$event.target.style.transform = 'scale(1)'"
+                  />
+                </div>
+              </template>
+              <a-card-meta>
+                <template #title>
+                  <div style="font-size: 15px; font-weight: bold; margin-bottom: 8px">
+                    {{ recVehicle.brand }} {{ recVehicle.name }}
+                  </div>
+                </template>
+                <template #description>
+                  <div>
+                    <div style="color: #ff4d4f; font-size: 18px; font-weight: bold; margin-bottom: 8px">
+                      ¥{{ formatPrice(recVehicle.price) }}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: #666; font-size: 12px; margin-bottom: 12px">
+                      <span>续航：{{ recVehicle.rangeKm }}km</span>
+                      <span>库存：{{ recVehicle.stock || 0 }}</span>
+                    </div>
+                    <a-button type="primary" block size="small" @click.stop="handleDetail(recVehicle.id)">
+                      查看详情
+                    </a-button>
+                  </div>
+                </template>
+              </a-card-meta>
+            </a-card>
+          </a-col>
+        </a-row>
       </div>
       <a-divider />
       <!-- 用户评价 -->
@@ -132,6 +196,9 @@ const vehicle = ref(null)
 const promotions = ref([])
 const evaluationList = ref([])
 const configParams = ref({})
+const recommendedVehicles = ref([])
+const isSubscribed = ref(false)
+const subscribeLoading = ref(false)
 
 const evalColumns = [
   {
@@ -261,6 +328,43 @@ const getDetail = async (id) => {
         configParams.value = {}
       }
     }
+    
+    // 记录浏览历史
+    try {
+      await request({
+        url: '/carsale/browse/record',
+        method: 'post',
+        params: { vehicleId: id }
+      })
+    } catch (error) {
+      console.error('记录浏览历史失败', error)
+    }
+    
+    // 获取推荐车型
+    try {
+      const recommendRes = await request({
+        url: '/carsale/recommend/vehicles',
+        method: 'get',
+        params: { limit: 4 }
+      })
+      recommendedVehicles.value = recommendRes.data || []
+    } catch (error) {
+      console.error('获取推荐车型失败', error)
+    }
+    
+    // 检查是否已订阅库存提醒
+    if (vehicle.value.stock === 0) {
+      try {
+        const checkRes = await request({
+          url: '/carsale/stock-alert/check',
+          method: 'get',
+          params: { vehicleId: id }
+        })
+        isSubscribed.value = checkRes.data || false
+      } catch (error) {
+        console.error('检查订阅状态失败', error)
+      }
+    }
   } catch (error) {
     message.error('获取车辆详情失败')
   } finally {
@@ -298,6 +402,34 @@ const handleTestDrive = () => {
 // 返回上一页
 const handleBack = () => {
   router.back()
+}
+
+// 查看推荐车型详情
+const handleDetail = (id) => {
+  router.push({ path: '/customer/vehicle/detail', query: { id } })
+}
+
+// 订阅库存提醒
+const handleSubscribeStock = async () => {
+  if (isSubscribed.value) {
+    message.info('您已订阅该车型的库存提醒')
+    return
+  }
+  
+  subscribeLoading.value = true
+  try {
+    await request({
+      url: '/carsale/stock-alert/subscribe',
+      method: 'post',
+      params: { vehicleId: vehicle.value.id }
+    })
+    isSubscribed.value = true
+    message.success('订阅成功，库存补货后将通知您')
+  } catch (error) {
+    message.error('订阅失败')
+  } finally {
+    subscribeLoading.value = false
+  }
 }
 
 onMounted(() => {

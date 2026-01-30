@@ -40,6 +40,10 @@
         <result property="create_Time" column="create_time"/>
         <result property="payTime" column="pay_time"/>
         <result property="pickupTime" column="pickup_time"/>
+        <result property="financePlanId" column="finance_plan_id"/>
+        <result property="originalPrice" column="original_price"/>
+        <result property="discountAmount" column="discount_amount"/>
+        <result property="downPayment" column="down_payment"/>
     </resultMap>
 
     <!-- 新增用户购车 -->
@@ -52,6 +56,10 @@
             <if test="create_Time != null">create_time,</if>
             <if test="payTime != null">pay_time,</if>
             <if test="pickupTime != null">pickup_time,</if>
+            <if test="financePlanId != null">finance_plan_id,</if>
+            <if test="originalPrice != null">original_price,</if>
+            <if test="discountAmount != null">discount_amount,</if>
+            <if test="downPayment != null">down_payment,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{id}, #{userId}, #{vehicleId}, #{status}, #{amount}, #{number},
@@ -60,6 +68,10 @@
             <if test="create_Time != null">#{create_Time},</if>
             <if test="payTime != null">#{payTime},</if>
             <if test="pickupTime != null">#{pickupTime},</if>
+            <if test="financePlanId != null">#{financePlanId},</if>
+            <if test="originalPrice != null">#{originalPrice},</if>
+            <if test="discountAmount != null">#{discountAmount},</if>
+            <if test="downPayment != null">#{downPayment},</if>
         </trim>
     </insert>
 
@@ -100,6 +112,18 @@
             <if test="pickupTime != null">
                 pickup_time = #{pickupTime},
             </if>
+            <if test="financePlanId != null">
+                finance_plan_id = #{financePlanId},
+            </if>
+            <if test="originalPrice != null">
+                original_price = #{originalPrice},
+            </if>
+            <if test="discountAmount != null">
+                discount_amount = #{discountAmount},
+            </if>
+            <if test="downPayment != null">
+                down_payment = #{downPayment},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -119,14 +143,16 @@
 
     <!-- 根据id查询用户购车 -->
     <select id="selectOrdersById" parameterType="Long" resultMap="OrdersMap">
-        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time,pickup_time
+        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time,pickup_time,
+               finance_plan_id,original_price,discount_amount,down_payment
         from carsale_orders
         where id = #{id}
     </select>
 
     <!-- 查询用户购车列表 -->
     <select id="selectOrdersList" parameterType="Orders" resultMap="OrdersMap">
-        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time,pickup_time
+        select id,user_id,vehicle_id,status,amount,number,phone,store_location,create_time,pay_time,pickup_time,
+               finance_plan_id,original_price,discount_amount,down_payment
         from carsale_orders
         <where>
             <if test="id != null">         and id = #{id}             </if>

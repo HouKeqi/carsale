@@ -26,6 +26,8 @@
         <result property="title" column="title"/>
         <result property="vehicleId" column="vehicle_id"/>
         <result property="discountType" column="discount_type"/>
+        <result property="discountAmount" column="discount_amount"/>
+        <result property="description" column="description"/>
         <result property="discountValue" column="discount_value"/>
         <result property="startTime" column="start_time"/>
         <result property="endTime" column="end_time"/>
@@ -35,9 +37,9 @@
     <!-- 新增活动 -->
     <insert id="insertPromotion" parameterType="Promotion" useGeneratedKeys="true" keyProperty="id">
         insert into carsale_promotion
-        (title, vehicle_id, discount_type, discount_value, start_time, end_time, status)
+        (title, vehicle_id, discount_type, discount_amount, description, discount_value, start_time, end_time, status)
         values
-        (#{title}, #{vehicleId}, #{discountType}, #{discountValue}, #{startTime}, #{endTime}, #{status})
+        (#{title}, #{vehicleId}, #{discountType}, #{discountAmount}, #{description}, #{discountValue}, #{startTime}, #{endTime}, #{status})
     </insert>
 
     <!-- 修改活动 -->
@@ -55,6 +57,12 @@
             </if>
             <if test="discountType != null">
                 discount_type = #{discountType},
+            </if>
+            <if test="discountAmount != null">
+                discount_amount = #{discountAmount},
+            </if>
+            <if test="description != null">
+                description = #{description},
             </if>
             <if test="discountValue != null">
                 discount_value = #{discountValue},
@@ -87,13 +95,13 @@
 
     <!-- 根据id查询活动 -->
     <select id="selectPromotionById" parameterType="Long" resultMap="PromotionMap">
-        select id, title, vehicle_id, discount_type, discount_value, start_time, end_time, status
+        select id, title, vehicle_id, discount_type, discount_amount, description, discount_value, start_time, end_time, status
         from carsale_promotion where id = #{id}
     </select>
 
     <!-- 查询活动列表 -->
     <select id="selectPromotionList" parameterType="Promotion" resultMap="PromotionMap">
-        select id, title, vehicle_id, discount_type, discount_value, start_time, end_time, status
+        select id, title, vehicle_id, discount_type, discount_amount, description, discount_value, start_time, end_time, status
         from carsale_promotion
         <where>
             <if test="id != null">
@@ -107,6 +115,12 @@
             </if>
             <if test="discountType != null">
                 and discount_type = #{discountType}
+            </if>
+            <if test="discountAmount != null">
+                and discount_amount = #{discountAmount}
+            </if>
+            <if test="description != null and description != ''">
+                and description like concat('%', #{description}, '%')
             </if>
             <if test="discountValue != null">
                 and discount_value = #{discountValue}

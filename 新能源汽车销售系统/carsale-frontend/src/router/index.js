@@ -82,6 +82,12 @@ const routes = [
         meta: { title: '车辆详情', requiresAuth: true }
       },
       {
+        path: 'customer/vehicle/compare',
+        name: 'CustomerVehicleCompare',
+        component: () => import('@/views/customer/vehicle/compare.vue'),
+        meta: { title: '车辆对比', requiresAuth: true }
+      },
+      {
         path: 'customer/order/create',
         name: 'CustomerOrderCreate',
         component: () => import('@/views/customer/order/create.vue'),
@@ -134,6 +140,12 @@ const routes = [
         name: 'CustomerProfile',
         component: () => import('@/views/customer/profile/index.vue'),
         meta: { title: '个人中心', requiresAuth: true }
+      },
+      {
+        path: 'customer/stock-alert',
+        name: 'CustomerStockAlert',
+        component: () => import('@/views/customer/stock-alert/index.vue'),
+        meta: { title: '我的库存提醒', requiresAuth: true }
       }
     ]
   }
@@ -147,7 +159,7 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // 设置页面标题
   if (to.meta.title) {
     document.title = to.meta.title + ' - 新能源汽车销售系统'
@@ -164,12 +176,12 @@ router.beforeEach(async (to, from, next) => {
           console.error('获取用户信息失败:', error)
         }
       }
-      
+
       // 如果是根路径，根据用户角色重定向
       if (to.path === '/') {
         const isAdmin = authStore.roles?.includes('admin') || false
         const isCustomer = authStore.roles?.includes('customer') || false
-        
+
         if (isAdmin) {
           next('/admin/vehicle')
         } else if (isCustomer) {
@@ -180,7 +192,7 @@ router.beforeEach(async (to, from, next) => {
         }
         return
       }
-      
+
       // 检查路由的角色权限要求
       if (to.meta.roles && to.meta.roles.length > 0) {
         const hasPermission = to.meta.roles.some(role => authStore.roles?.includes(role))
@@ -188,7 +200,7 @@ router.beforeEach(async (to, from, next) => {
           // 没有权限，根据用户角色重定向到合适的页面
           const isAdmin = authStore.roles?.includes('admin') || false
           const isCustomer = authStore.roles?.includes('customer') || false
-          
+
           if (isAdmin) {
             next('/admin/vehicle')
           } else if (isCustomer) {
@@ -199,7 +211,7 @@ router.beforeEach(async (to, from, next) => {
           return
         }
       }
-      
+
       next()
     } else {
       next({
@@ -218,11 +230,11 @@ router.beforeEach(async (to, from, next) => {
           console.error('获取用户信息失败:', error)
         }
       }
-      
+
       // 根据用户角色跳转
       const isAdmin = authStore.roles?.includes('admin') || false
       const isCustomer = authStore.roles?.includes('customer') || false
-      
+
       if (isAdmin) {
         next('/admin/vehicle')
       } else if (isCustomer) {

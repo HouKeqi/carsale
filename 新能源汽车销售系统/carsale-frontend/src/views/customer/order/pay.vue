@@ -18,11 +18,44 @@
               <a-descriptions-item label="购车数量">
                 {{ order.number }} 辆
               </a-descriptions-item>
-              <a-descriptions-item label="成交金额" :span="2">
-                <span style="font-size: 24px; color: #ff4d4f; font-weight: bold">
+              
+              <!-- 价格明细 -->
+              <a-descriptions-item label="原价" :span="2">
+                <span style="font-size: 16px; color: #666">
+                  ¥{{ formatPrice(order.originalPrice || order.amount) }}
+                </span>
+              </a-descriptions-item>
+              <a-descriptions-item label="优惠金额" :span="2" v-if="order.discountAmount && order.discountAmount > 0">
+                <span style="font-size: 16px; color: #ff4d4f">
+                  -¥{{ formatPrice(order.discountAmount) }}
+                </span>
+              </a-descriptions-item>
+              <a-descriptions-item label="折扣后价格" :span="2">
+                <span style="font-size: 18px; color: #333; font-weight: bold">
                   ¥{{ formatPrice(order.amount) }}
                 </span>
               </a-descriptions-item>
+              
+              <!-- 金融方案信息 -->
+              <a-descriptions-item label="金融方案" :span="2" v-if="order.financePlanId && financePlanInfo">
+                <a-tag color="blue">
+                  {{ financePlanInfo.name }} - 首付{{ financePlanInfo.downPaymentRate }}% / {{ financePlanInfo.periods }}期 / 利率{{ financePlanInfo.interestRate }}%
+                </a-tag>
+              </a-descriptions-item>
+              
+              <!-- 实付价格 -->
+              <a-descriptions-item label="实付价格" :span="2">
+                <span style="font-size: 24px; color: #ff4d4f; font-weight: bold">
+                  ¥{{ formatPrice(order.financePlanId && order.downPayment ? order.downPayment : order.amount) }}
+                </span>
+                <span v-if="order.financePlanId && order.downPayment" style="margin-left: 10px; font-size: 12px; color: #999">
+                  （首付金额，剩余金额分期支付）
+                </span>
+                <span v-else style="margin-left: 10px; font-size: 12px; color: #999">
+                  （全款支付）
+                </span>
+              </a-descriptions-item>
+              
               <a-descriptions-item label="提车门店">
                 {{ order.storeLocation }}
               </a-descriptions-item>
@@ -96,6 +129,7 @@ const loading = ref(false)
 const paying = ref(false)
 const order = ref(null)
 const vehicleInfo = ref(null)
+const financePlanInfo = ref(null)
 const paymentMethod = ref(1)
 
 // 格式化价格
@@ -138,6 +172,10 @@ const getOrderInfo = async () => {
       }
       // 获取车辆信息
       await loadVehicleInfo(order.value.vehicleId)
+      // 获取金融方案信息
+      if (order.value.financePlanId) {
+        await loadFinancePlanInfo(order.value.financePlanId)
+      }
     }
   } catch (error) {
     message.error('获取订单信息失败')
@@ -157,6 +195,20 @@ const loadVehicleInfo = async (vehicleId) => {
     vehicleInfo.value = res.data?.vehicle
   } catch (error) {
     console.error('获取车辆信息失败', error)
+  }
+}
+
+// 加载金融方案信息
+const loadFinancePlanInfo = async (planId) => {
+  try {
+    const res = await request({
+      url: '/carsale/finance/list',
+      method: 'get'
+    })
+    const plans = res.data || []
+    financePlanInfo.value = plans.find(p => p.id === planId)
+  } catch (error) {
+    console.error('获取金融方案信息失败', error)
   }
 }
 

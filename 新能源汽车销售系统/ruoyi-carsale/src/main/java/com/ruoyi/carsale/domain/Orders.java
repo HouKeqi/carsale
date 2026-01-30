@@ -47,6 +47,14 @@ public class Orders extends BaseEntity {
     private String payTime;
     @Excel(name = "提车时间")
     private String pickupTime;
+    @Excel(name = "金融方案ID")
+    private Long financePlanId;
+    @Excel(name = "原价")
+    private Double originalPrice;
+    @Excel(name = "折扣金额")
+    private Double discountAmount;
+    @Excel(name = "首付金额")
+    private Double downPayment;
 
     public String getPickupTime() {
         return pickupTime;
@@ -54,6 +62,38 @@ public class Orders extends BaseEntity {
 
     public void setPickupTime(String pickupTime) {
         this.pickupTime = pickupTime;
+    }
+
+    public Long getFinancePlanId() {
+        return financePlanId;
+    }
+
+    public void setFinancePlanId(Long financePlanId) {
+        this.financePlanId = financePlanId;
+    }
+
+    public Double getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(Double originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public Double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(Double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public Double getDownPayment() {
+        return downPayment;
+    }
+
+    public void setDownPayment(Double downPayment) {
+        this.downPayment = downPayment;
     }
 
     public String getCreate_Time() {

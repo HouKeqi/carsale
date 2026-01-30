@@ -4,125 +4,145 @@
       <span style="font-size: 18px; font-weight: bold">车辆管理</span>
     </template>
 
-    <!-- 搜索区域 -->
-    <a-form layout="inline" :model="queryParams" style="margin-bottom: 16px">
-      <a-form-item label="车型名称">
-        <a-input
-          v-model:value="queryParams.name"
-          placeholder="请输入车型名称"
-          allowClear
-          style="width: 200px"
-          @pressEnter="handleQuery"
-        />
-      </a-form-item>
-      <a-form-item label="品牌">
-        <a-select
-          v-model:value="queryParams.brand"
-          placeholder="请选择品牌"
-          allowClear
-          style="width: 150px"
-        >
-          <a-select-option v-for="brand in brandOptions" :key="brand" :value="brand">
-            {{ brand }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item label="价格范围">
-        <a-input-number
-          v-model:value="queryParams.minPrice"
-          :min="0"
-          :precision="0"
-          placeholder="最低价"
-          style="width: 120px"
-        />
-        <span style="margin: 0 8px">-</span>
-        <a-input-number
-          v-model:value="queryParams.maxPrice"
-          :min="0"
-          :precision="0"
-          placeholder="最高价"
-          style="width: 120px"
-        />
-      </a-form-item>
-      <a-form-item label="续航里程">
-        <a-input-number
-          v-model:value="queryParams.minRangeKm"
-          :min="0"
-          placeholder="最小"
-          style="width: 100px"
-        />
-        <span style="margin: 0 8px">-</span>
-        <a-input-number
-          v-model:value="queryParams.maxRangeKm"
-          :min="0"
-          placeholder="最大"
-          style="width: 100px"
-        />
-        <span style="margin-left: 8px">km</span>
-      </a-form-item>
-      <a-form-item label="电池类型">
-        <a-select
-          v-model:value="queryParams.batteryType"
-          placeholder="请选择"
-          allowClear
-          style="width: 150px"
-        >
-          <a-select-option :value="0">三元锂电池</a-select-option>
-          <a-select-option :value="1">磷酸铁锂电池</a-select-option>
-          <a-select-option :value="2">其他</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item label="库存状态">
-        <a-select
-          v-model:value="queryParams.stockStatus"
-          placeholder="请选择"
-          allowClear
-          style="width: 120px"
-        >
-          <a-select-option value="sufficient">充足</a-select-option>
-          <a-select-option value="warning">预警(≤5)</a-select-option>
-          <a-select-option value="out">缺货(=0)</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" @click="handleQuery">
-          <template #icon><SearchOutlined /></template>
-          搜索
-        </a-button>
-        <a-button style="margin-left: 8px" @click="resetQuery">
-          <template #icon><ReloadOutlined /></template>
-          重置
-        </a-button>
-      </a-form-item>
+    <a-form :model="queryParams" class="search-form">
+      <a-row :gutter="[24, 16]">
+        <a-col :xs="24" :sm="12" :md="8" :lg="6">
+          <a-form-item label="车型名称">
+            <a-input
+                v-model:value="queryParams.name"
+                placeholder="请输入车型名称"
+                allowClear
+                @pressEnter="handleQuery"
+            />
+          </a-form-item>
+        </a-col>
+
+        <a-col :xs="24" :sm="12" :md="8" :lg="6">
+          <a-form-item label="品牌">
+            <a-select
+                v-model:value="queryParams.brand"
+                placeholder="请选择品牌"
+                allowClear
+            >
+              <a-select-option v-for="brand in brandOptions" :key="brand" :value="brand">
+                {{ brand }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+
+        <a-col :xs="24" :sm="12" :md="8" :lg="6">
+          <a-form-item label="价格范围">
+            <div class="range-wrapper">
+              <a-input-number
+                  v-model:value="queryParams.minPrice"
+                  :min="0"
+                  placeholder="最低"
+                  style="flex: 1"
+              />
+              <span class="range-split">-</span>
+              <a-input-number
+                  v-model:value="queryParams.maxPrice"
+                  :min="0"
+                  placeholder="最高"
+                  style="flex: 1"
+              />
+            </div>
+          </a-form-item>
+        </a-col>
+
+        <a-col :xs="24" :sm="12" :md="8" :lg="6">
+          <a-form-item label="续航里程">
+            <div class="range-wrapper">
+              <a-input-number
+                  v-model:value="queryParams.minRangeKm"
+                  :min="0"
+                  placeholder="最小"
+                  style="flex: 1"
+              />
+              <span class="range-split">-</span>
+              <a-input-number
+                  v-model:value="queryParams.maxRangeKm"
+                  :min="0"
+                  placeholder="最大"
+                  style="flex: 1"
+              />
+              <span style="margin-left: 4px">km</span>
+            </div>
+          </a-form-item>
+        </a-col>
+
+        <a-col :xs="24" :sm="12" :md="8" :lg="6">
+          <a-form-item label="电池类型">
+            <a-select
+                v-model:value="queryParams.batteryType"
+                placeholder="请选择类型"
+                allowClear
+            >
+              <a-select-option :value="0">三元锂电池</a-select-option>
+              <a-select-option :value="1">磷酸铁锂电池</a-select-option>
+              <a-select-option :value="2">其他</a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+
+        <a-col :xs="24" :sm="12" :md="8" :lg="6">
+          <a-form-item label="库存状态">
+            <a-select
+                v-model:value="queryParams.stockStatus"
+                placeholder="请选择状态"
+                allowClear
+            >
+              <a-select-option value="sufficient">充足</a-select-option>
+              <a-select-option value="warning">预警(≤5)</a-select-option>
+              <a-select-option value="out">缺货(=0)</a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+
+        <a-col :xs="24" :sm="24" :md="8" :lg="12" class="search-btns">
+          <a-space>
+            <a-button type="primary" @click="handleQuery">
+              <template #icon><SearchOutlined /></template>
+              搜索
+            </a-button>
+            <a-button @click="resetQuery">
+              <template #icon><ReloadOutlined /></template>
+              重置
+            </a-button>
+          </a-space>
+        </a-col>
+      </a-row>
     </a-form>
 
-    <!-- 操作按钮 -->
+    <a-divider style="margin: 0 0 24px 0" />
+
     <div style="margin-bottom: 16px">
       <a-button type="primary" @click="handleAdd">
         <template #icon><PlusOutlined /></template>
         新增
       </a-button>
       <a-button
-        type="primary"
-        danger
-        :disabled="!hasSelected"
-        style="margin-left: 8px"
-        @click="handleBatchDelete"
+          type="primary"
+          danger
+          :disabled="!hasSelected"
+          style="margin-left: 8px"
+          @click="handleBatchDelete"
       >
         <template #icon><DeleteOutlined /></template>
         批量删除
       </a-button>
     </div>
 
-    <!-- 表格 -->
     <a-table
-      :columns="columns"
-      :data-source="vehicleList"
-      :loading="loading"
-      :pagination="pagination"
-      :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
-      row-key="id"
-      @change="handleTableChange"
+        :columns="columns"
+        :data-source="vehicleList"
+        :loading="loading"
+        :pagination="pagination"
+        :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
+        row-key="id"
+        @change="handleTableChange"
+        :scroll="{ x: 1200 }"
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'price'">
@@ -140,9 +160,9 @@
           <span style="color: #409eff">{{ record.rangeKm }}km</span>
         </template>
         <template v-else-if="column.dataIndex === 'stock'">
-          <span v-if="record.stock === 0" >缺货</span>
-          <span v-else-if="record.stock <= 5">{{ record.stock }}</span>
-          <span v-else >{{ record.stock }}</span>
+          <a-badge v-if="record.stock === 0" status="error" text="缺货" />
+          <a-badge v-else-if="record.stock <= 5" status="warning" :text="record.stock" />
+          <span v-else>{{ record.stock }}</span>
         </template>
         <template v-else-if="column.key === 'action'">
           <a-button type="link" size="small" @click="handleView(record)">查看</a-button>
@@ -152,20 +172,19 @@
       </template>
     </a-table>
 
-    <!-- 新增/修改对话框 -->
     <a-modal
-      v-model:open="modalVisible"
-      :title="modalTitle"
-      :width="800"
-      @ok="handleSubmit"
-      @cancel="handleCancel"
+        v-model:open="modalVisible"
+        :title="modalTitle"
+        :width="800"
+        @ok="handleSubmit"
+        @cancel="handleCancel"
     >
       <a-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        :label-col="{ span: 6 }"
-        :wrapper-col="{ span: 18 }"
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          :label-col="{ span: 6 }"
+          :wrapper-col="{ span: 18 }"
       >
         <a-form-item label="车型名称" name="name">
           <a-input v-model:value="form.name" placeholder="请输入车型名称" />
@@ -175,11 +194,11 @@
         </a-form-item>
         <a-form-item label="指导价" name="price">
           <a-input-number
-            v-model:value="form.price"
-            :min="0"
-            :precision="2"
-            style="width: 100%"
-            placeholder="请输入指导价"
+              v-model:value="form.price"
+              :min="0"
+              :precision="2"
+              style="width: 100%"
+              placeholder="请输入指导价"
           />
         </a-form-item>
         <a-form-item label="电池类型" name="batteryType">
@@ -191,56 +210,56 @@
         </a-form-item>
         <a-form-item label="续航里程(km)" name="rangeKm">
           <a-input-number
-            v-model:value="form.rangeKm"
-            :min="0"
-            style="width: 100%"
-            placeholder="请输入续航里程"
+              v-model:value="form.rangeKm"
+              :min="0"
+              style="width: 100%"
+              placeholder="请输入续航里程"
           />
         </a-form-item>
         <a-form-item label="库存数量" name="stock">
           <a-input-number
-            v-model:value="form.stock"
-            :min="0"
-            style="width: 100%"
-            placeholder="请输入库存数量"
+              v-model:value="form.stock"
+              :min="0"
+              style="width: 100%"
+              placeholder="请输入库存数量"
           />
         </a-form-item>
         <a-form-item label="上市时间" name="launchDate">
           <a-date-picker
-            v-model:value="form.launchDate"
-            format="YYYY-MM-DD"
-            style="width: 100%"
-            placeholder="选择上市时间"
+              v-model:value="form.launchDate"
+              format="YYYY-MM-DD"
+              style="width: 100%"
+              placeholder="选择上市时间"
           />
         </a-form-item>
         <a-form-item label="快充时间" name="fastCharge">
           <a-input
-            v-model:value="form.fastCharge"
-            placeholder="请输入快充时间，如：0.5h"
+              v-model:value="form.fastCharge"
+              placeholder="请输入快充时间，如：0.5h"
           />
         </a-form-item>
         <a-form-item label="智能驾驶等级" name="aiLevel">
           <a-input
-            v-model:value="form.aiLevel"
-            placeholder="请输入智能驾驶等级，如：L2"
+              v-model:value="form.aiLevel"
+              placeholder="请输入智能驾驶等级，如：L2"
           />
         </a-form-item>
         <a-form-item label="车辆描述" name="description">
           <a-textarea
-            v-model:value="form.description"
-            :rows="4"
-            placeholder="请输入车辆描述信息"
-            :maxlength="500"
-            show-count
+              v-model:value="form.description"
+              :rows="4"
+              placeholder="请输入车辆描述信息"
+              :maxlength="500"
+              show-count
           />
         </a-form-item>
         <a-form-item label="车辆图片" name="imageUrl">
           <a-upload
-            :file-list="imageFileList"
-            list-type="picture-card"
-            :before-upload="beforeUpload"
-            @preview="handleImagePreview"
-            @remove="handleImageRemove"
+              :file-list="imageFileList"
+              list-type="picture-card"
+              :before-upload="beforeUpload"
+              @preview="handleImagePreview"
+              @remove="handleImageRemove"
           >
             <div v-if="imageFileList.length < 1">
               <PlusOutlined />
@@ -257,12 +276,11 @@
       </a-form>
     </a-modal>
 
-    <!-- 查看详情对话框 -->
     <a-modal
-      v-model:open="viewModalVisible"
-      title="车辆详细信息"
-      :width="600"
-      :footer="null"
+        v-model:open="viewModalVisible"
+        title="车辆详细信息"
+        :width="600"
+        :footer="null"
     >
       <a-descriptions :column="1" bordered>
         <a-descriptions-item label="车辆编号">{{ viewData.id }}</a-descriptions-item>
@@ -284,7 +302,15 @@
           <a-tag v-else color="green">{{ viewData.stock }}</a-tag>
         </a-descriptions-item>
         <a-descriptions-item label="上市时间">{{ viewData.launchDate || '-' }}</a-descriptions-item>
-        <a-descriptions-item label="配置参数">{{ viewData.configJson || '-' }}</a-descriptions-item>
+        <a-descriptions-item label="配置参数">
+          <div v-if="parsedConfig">
+            <a-space wrap>
+              <span v-if="parsedConfig.fast_charge" >快充: {{ parsedConfig.fast_charge }}</span>
+              <span v-if="parsedConfig.ai_level" >智驾: {{ parsedConfig.ai_level }}</span>
+            </a-space>
+          </div>
+          <span v-else>-</span>
+        </a-descriptions-item>
         <a-descriptions-item label="车辆描述">{{ viewData.description || '-' }}</a-descriptions-item>
         <a-descriptions-item label="车辆图片" v-if="viewData.imageUrl">
           <img :src="viewData.imageUrl" style="max-width: 300px; max-height: 200px" />
@@ -295,7 +321,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue' // 增加了 computed
 import { message, Modal } from 'ant-design-vue'
 import {
   SearchOutlined,
@@ -326,6 +352,18 @@ const viewData = ref({})
 const imageFileList = ref([])
 const previewVisible = ref(false)
 const previewImage = ref('')
+
+// 新增：计算属性解析配置JSON
+const parsedConfig = computed(() => {
+  if (!viewData.value.configJson) return null
+  try {
+    return typeof viewData.value.configJson === 'string'
+        ? JSON.parse(viewData.value.configJson)
+        : viewData.value.configJson
+  } catch (e) {
+    return null
+  }
+})
 
 const queryParams = reactive({
   pageNum: 1,
@@ -483,7 +521,7 @@ const getList = async () => {
 
     vehicleList.value = list
     pagination.total = res.total || list.length
-    
+
     // 更新品牌列表
     extractBrands()
   } catch (error) {
@@ -562,7 +600,7 @@ const handleUpdate = async (record) => {
     let aiLevel = null
     if (data.configJson) {
       try {
-        const config = JSON.parse(data.configJson)
+        const config = typeof data.configJson === 'string' ? JSON.parse(data.configJson) : data.configJson
         fastCharge = config.fast_charge || null
         aiLevel = config.ai_level || null
       } catch (e) {
@@ -602,10 +640,10 @@ const handleUpdate = async (record) => {
 
 // 查看
 const handleView = async (record) => {
-  viewModalVisible.value = true
   try {
     const res = await getAdminVehicleDetail(record.id)
     viewData.value = res.data || res
+    viewModalVisible.value = true
   } catch (error) {
     message.error('获取车辆详情失败')
   }
@@ -797,5 +835,48 @@ onMounted(() => {
 <style scoped>
 .main-page {
   padding: 24px;
+}
+
+/* 搜索表单美化 */
+.search-form {
+  background-color: #fafafa;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+/* 覆盖 a-form-item 默认底部边距，由 row 的 gutter 控制 */
+.search-form :deep(.a-form-item) {
+  margin-bottom: 0;
+  display: flex;
+}
+
+/* 让 label 宽度自适应 */
+.search-form :deep(.a-form-item-label) {
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.search-form :deep(.a-form-item-control-wrapper) {
+  flex-grow: 1;
+}
+
+/* 范围选择容器 */
+.range-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.range-split {
+  padding: 0 8px;
+  color: #999;
+}
+
+/* 按钮组居右 */
+.search-btns {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
 }
 </style>

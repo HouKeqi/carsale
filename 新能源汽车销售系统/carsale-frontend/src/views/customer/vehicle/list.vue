@@ -1,123 +1,153 @@
 <template>
-  <a-card class="main-page">
-    <!-- 搜索区域 -->
-    <a-form layout="inline" :model="searchForm" style="margin-bottom: 20px">
-      <a-form-item label="车型名称">
+  <div class="vehicle-market-container">
+    <div class="header-action-bar">
+      <div class="search-left">
         <a-input-search
-          v-model:value="searchForm.name"
-          placeholder="根据车型名称进行搜索"
-          enter-button
-          allowClear
-          @search="search"
-          style="width: 250px"
+            v-model:value="searchForm.name"
+            placeholder="搜索车型名称..."
+            enter-button
+            allow-clear
+            @search="search"
+            style="width: 320px"
         />
-      </a-form-item>
-      <a-form-item label="品牌">
         <a-select
-          v-model:value="searchForm.brand"
-          placeholder="请选择品牌"
-          allowClear
-          style="width: 150px"
-          @change="search"
+            v-model:value="searchForm.brand"
+            placeholder="所有品牌"
+            allow-clear
+            class="brand-select"
+            @change="search"
         >
           <a-select-option v-for="brand in brandOptions" :key="brand" :value="brand">
             {{ brand }}
           </a-select-option>
         </a-select>
-      </a-form-item>
-      <a-form-item label="排序字段">
-        <a-select
-          v-model:value="searchForm.orderByColumn"
-          placeholder="请选择排序字段"
-          allowClear
-          style="width: 120px"
-          @change="search"
-        >
-          <a-select-option value="price">价格</a-select-option>
-          <a-select-option value="rangeKm">续航里程</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item label="排序方式">
-        <a-select
-          v-model:value="searchForm.isAsc"
-          placeholder="请选择排序方式"
-          allowClear
-          style="width: 120px"
-          @change="search"
-        >
-          <a-select-option value="ASC">升序</a-select-option>
-          <a-select-option value="DESC">降序</a-select-option>
-        </a-select>
-      </a-form-item>
-    </a-form>
+      </div>
 
-    <!-- 车辆卡片列表 -->
-    <a-row :gutter="[16, 16]">
-      <a-col :span="6" v-for="vehicle in vehicleList" :key="vehicle.id">
-        <a-card
-          hoverable
-          :style="{ cursor: 'pointer' }"
-          @click="handleDetail(vehicle.id)"
-        >
-          <template #cover>
-            <img
-              :alt="vehicle.name"
-              :src="vehicle.imageUrl || '/default-vehicle.jpg'"
-              style="width: 100%; height: 200px; object-fit: cover"
-            />
-          </template>
-          <a-card-meta>
-            <template #title>
-              <div style="font-size: 16px; font-weight: bold">
-                {{ vehicle.brand }} {{ vehicle.name }}
-              </div>
+      <div class="search-right">
+        <a-space>
+          <span class="sort-label">排序:</span>
+          <a-radio-group v-model:value="searchForm.orderByColumn" button-style="solid" @change="search">
+            <a-radio-button value="price">价格</a-radio-button>
+            <a-radio-button value="rangeKm">续航</a-radio-button>
+          </a-radio-group>
+          <a-button @click="toggleSortOrder">
+            <template #icon>
+              <sort-ascending-outlined v-if="searchForm.isAsc === 'ASC'" />
+              <sort-descending-outlined v-else />
             </template>
-            <template #description>
-              <div style="margin-top: 10px">
-                <div style="color: #ff4d4f; font-size: 20px; font-weight: bold">
-                  ¥{{ formatPrice(vehicle.price) }}
-                </div>
-                <div style="margin-top: 8px; color: #666">
-                  续航：{{ vehicle.rangeKm }}km | 库存：{{ vehicle.stock }}
-                </div>
-              </div>
-            </template>
-          </a-card-meta>
-        </a-card>
-      </a-col>
-    </a-row>
+          </a-button>
+        </a-space>
+      </div>
+    </div>
 
-    <!-- 分页 -->
-    <a-pagination
-      v-model:current="pagination.current"
-      v-model:page-size="pagination.pageSize"
-      :total="pagination.total"
-      :show-total="(total) => `共 ${total} 条`"
-      :show-size-changer="true"
-      :page-size-options="['12', '24', '48', '96']"
-      style="margin-top: 20px; text-align: right"
-      @change="handlePageChange"
-      @showSizeChange="handlePageSizeChange"
-    />
-  </a-card>
+    <div class="content-scroll-area">
+      <a-spin :spinning="loading">
+        <a-row :gutter="[20, 20]">
+          <a-col :xs="24" :sm="12" :md="8" :lg="6" v-for="vehicle in vehicleList" :key="vehicle.id">
+            <a-card hoverable class="vehicle-card" @click="handleDetail(vehicle.id)">
+              <template #cover>
+                <div class="img-wrapper">
+                  <img :src="vehicle.imageUrl || '/default-vehicle.jpg'" :alt="vehicle.name" />
+                  <div class="range-tag">{{ vehicle.rangeKm }}km 续航</div>
+                </div>
+              </template>
+
+              <div class="card-body">
+                <div class="brand-text">{{ vehicle.brand }}</div>
+                <h3 class="vehicle-name">{{ vehicle.name }}</h3>
+
+                <div class="price-section">
+                  <span class="price-unit">¥</span>
+                  <span class="price-value">{{ formatPrice(vehicle.price) }}</span>
+                </div>
+
+                <div class="card-footer">
+                  <span class="stock-text">库存: {{ vehicle.stock }}</span>
+                  <a-button
+                      :type="isInCompare(vehicle.id) ? 'primary' : 'default'"
+                      size="small"
+                      shape="round"
+                      @click.stop="handleAddToCompare(vehicle)"
+                  >
+                    <template #icon>
+                      <check-outlined v-if="isInCompare(vehicle.id)" />
+                      <plus-outlined v-else />
+                    </template>
+                    {{ isInCompare(vehicle.id) ? '已加入' : '对比' }}
+                  </a-button>
+                </div>
+              </div>
+            </a-card>
+          </a-col>
+        </a-row>
+
+        <a-empty v-if="!loading && vehicleList.length === 0" style="margin-top: 60px" />
+      </a-spin>
+
+      <div class="pagination-container">
+        <a-pagination
+            v-model:current="pagination.current"
+            v-model:page-size="pagination.pageSize"
+            :total="pagination.total"
+            :show-total="(total) => `共 ${total} 款车型`"
+            @change="handlePageChange"
+        />
+      </div>
+    </div>
+
+    <transition name="slide-fade">
+      <div v-if="compareStore.compareList.length > 0" class="compare-float-dock">
+        <div class="dock-header">
+          <span class="dock-title">
+            车型对比 <span class="count">({{ compareStore.compareList.length }}/{{ compareStore.maxCompareCount }})</span>
+          </span>
+          <a-button type="link" size="small" @click="router.push('/customer/vehicle/compare')">查看详情</a-button>
+        </div>
+
+        <div class="dock-body">
+          <div v-for="item in compareStore.compareList" :key="item.id" class="dock-item">
+            <a-avatar :src="item.imageUrl" :size="32" shape="square" />
+            <span class="item-name">{{ item.name }}</span>
+            <close-circle-outlined class="remove-icon" @click.stop="compareStore.removeVehicle(item.id)" />
+          </div>
+        </div>
+
+        <div class="dock-footer">
+          <a-button type="primary" block @click="router.push('/customer/vehicle/compare')">
+            立即对比
+          </a-button>
+        </div>
+      </div>
+    </transition>
+  </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { message } from 'ant-design-vue'
+import { ref, reactive, onMounted, h } from 'vue'
+import { message, Modal } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import request from '@/utils/request'
+import { useCompareStore } from '@/stores/compare'
+import {
+  SortAscendingOutlined,
+  SortDescendingOutlined,
+  PlusOutlined,
+  CheckOutlined,
+  CloseCircleOutlined,
+  SwapOutlined
+} from '@ant-design/icons-vue'
 
 const router = useRouter()
 const loading = ref(false)
 const vehicleList = ref([])
 const brandOptions = ref([])
+const compareStore = useCompareStore()
 
 const searchForm = reactive({
   name: '',
   brand: null,
-  orderByColumn: null,
-  isAsc: null
+  orderByColumn: 'price',
+  isAsc: 'ASC'
 })
 
 const queryParams = reactive({
@@ -125,8 +155,8 @@ const queryParams = reactive({
   pageSize: 12,
   name: '',
   brand: null,
-  orderByColumn: null,
-  isAsc: null
+  orderByColumn: 'price',
+  isAsc: 'ASC'
 })
 
 const pagination = reactive({
@@ -135,32 +165,26 @@ const pagination = reactive({
   total: 0
 })
 
-// 格式化价格
+// 价格格式化（去掉无意义的 .00）
 const formatPrice = (price) => {
-  if (!price) return '0.00'
-  return Number(price).toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
+  if (!price) return '0'
+  return parseFloat(price).toLocaleString()
 }
 
-// 提取品牌列表
+const toggleSortOrder = () => {
+  searchForm.isAsc = searchForm.isAsc === 'ASC' ? 'DESC' : 'ASC'
+  search()
+}
+
+// 获取品牌（优化为从列表聚合）
 const extractBrands = async () => {
   try {
-    const res = await request({
-      url: '/carsale/vehicle/search',
-      method: 'get',
-      params: { pageNum: 1, pageSize: 1000 }
-    })
-    const allVehicles = res.rows || res.data || []
-    const brands = [...new Set(allVehicles.map(v => v.brand).filter(b => b))].sort()
+    const res = await request({ url: '/carsale/vehicle/search', method: 'get', params: { pageNum: 1, pageSize: 500 } })
+    const brands = [...new Set((res.rows || []).map(v => v.brand).filter(Boolean))].sort()
     brandOptions.value = brands
-  } catch (error) {
-    console.error('获取品牌列表失败', error)
-  }
+  } catch (e) { console.error(e) }
 }
 
-// 查询列表
 const getList = async () => {
   loading.value = true
   try {
@@ -169,50 +193,55 @@ const getList = async () => {
       method: 'get',
       params: queryParams
     })
-    vehicleList.value = res.rows || res.data || []
+    vehicleList.value = res.rows || []
     pagination.total = res.total || 0
-    // 更新品牌列表
-    extractBrands()
   } catch (error) {
-    message.error('获取车辆列表失败')
+    message.error('数据加载失败')
   } finally {
     loading.value = false
   }
 }
 
-// 搜索
 const search = () => {
-  queryParams.name = searchForm.name
-  queryParams.brand = searchForm.brand
-  queryParams.orderByColumn = searchForm.orderByColumn
-  queryParams.isAsc = searchForm.isAsc
+  Object.assign(queryParams, searchForm)
   queryParams.pageNum = 1
   pagination.current = 1
   getList()
 }
 
-// 分页变化
 const handlePageChange = (page, size) => {
   queryParams.pageNum = page
   queryParams.pageSize = size
   pagination.current = page
-  pagination.pageSize = size
   getList()
 }
 
-// 每页条数变化
-const handlePageSizeChange = (current, size) => {
-  queryParams.pageNum = 1
-  queryParams.pageSize = size
-  pagination.current = 1
-  pagination.pageSize = size
-  getList()
-}
-
-// 查看详情
 const handleDetail = (id) => {
   router.push({ path: '/customer/vehicle/detail', query: { id } })
 }
+
+const handleAddToCompare = (vehicle) => {
+  const result = compareStore.addVehicle(vehicle)
+  if (result.success) {
+    message.success(`${vehicle.name} 已加入对比`)
+  } else if (result.needReplace) {
+    // 替换逻辑 UI 增强
+    Modal.confirm({
+      title: '对比位已满',
+      icon: h(SwapOutlined),
+      content: '对比列表最多支持 4 款车型，请选择一款进行替换。',
+      okText: '去替换',
+      cancelText: '取消',
+      onOk: () => {
+        router.push('/customer/vehicle/compare')
+      }
+    })
+  } else {
+    message.warning(result.message)
+  }
+}
+
+const isInCompare = (id) => compareStore.isInCompare(id)
 
 onMounted(() => {
   getList()
@@ -221,10 +250,211 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.main-page {
-  padding: 2%;
-  margin-top: 2vh;
-  height: 90vh;
+/* 容器布局 */
+.vehicle-market-container {
+  background-color: #f0f2f5;
+  min-height: 100vh;
+  padding: 24px;
+  position: relative;
+}
+
+/* 顶部操作栏 */
+.header-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
+}
+
+.search-left {
+  display: flex;
+  gap: 16px;
+}
+
+.brand-select {
+  width: 160px;
+}
+
+.sort-label {
+  color: #8c8c8c;
+  margin-right: 8px;
+}
+
+/* 车辆卡片 */
+.vehicle-card {
+  border-radius: 12px;
+  overflow: hidden;
+  border: none;
+  transition: all 0.3s;
+}
+
+.vehicle-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.img-wrapper {
+  height: 180px;
+  position: relative;
+  background: #f5f5f5;
+}
+
+.img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.range-tag {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.brand-text {
+  color: #1890ff;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.vehicle-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 4px 0 12px 0;
+  color: #262626;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.price-section {
+  margin-bottom: 16px;
+}
+
+.price-unit {
+  color: #ff4d4f;
+  font-size: 14px;
+  margin-right: 2px;
+}
+
+.price-value {
+  color: #ff4d4f;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+}
+
+.stock-text {
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+/* 分页 */
+.pagination-container {
+  margin-top: 40px;
+  text-align: center;
+  padding-bottom: 40px;
+}
+
+/* 悬浮对比框 */
+.compare-float-dock {
+  position: fixed;
+  right: 24px;
+  bottom: 40px;
+  width: 260px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+  z-index: 1000;
+  overflow: hidden;
+  border: 1px solid #e8e8e8;
+}
+
+.dock-header {
+  padding: 12px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dock-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.dock-title .count {
+  color: #1890ff;
+}
+
+.dock-body {
+  padding: 8px 16px;
+  max-height: 240px;
   overflow-y: auto;
+}
+
+.dock-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px dashed #f0f0f0;
+}
+
+.dock-item:last-child {
+  border-bottom: none;
+}
+
+.item-name {
+  margin: 0 8px;
+  flex: 1;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.remove-icon {
+  color: #bfbfbf;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.remove-icon:hover {
+  color: #ff4d4f;
+}
+
+.dock-footer {
+  padding: 12px 16px;
+}
+
+/* 动画 */
+.slide-fade-enter-active, .slide-fade-leave-active {
+  transition: all 0.3s ease-out;
+}
+.slide-fade-enter-from, .slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
 }
 </style>

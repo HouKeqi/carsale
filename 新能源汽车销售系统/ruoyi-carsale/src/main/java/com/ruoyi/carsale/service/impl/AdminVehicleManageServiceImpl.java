@@ -1,8 +1,11 @@
 package com.ruoyi.carsale.service.impl;
 
+import com.ruoyi.carsale.domain.StockAlert;
 import com.ruoyi.carsale.domain.Vehicle;
 import com.ruoyi.carsale.mapper.AdminVehicleManageMapper;
 import com.ruoyi.carsale.service.IAdminVehicleManageService;
+import com.ruoyi.carsale.service.IStockAlertNotifyService;
+import com.ruoyi.carsale.service.IStockAlertService;
 import com.ruoyi.common.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,12 @@ public class AdminVehicleManageServiceImpl implements IAdminVehicleManageService
 
     @Autowired
     private AdminVehicleManageMapper adminVehicleManageMapper;
+
+    @Autowired
+    private IStockAlertNotifyService stockAlertNotifyService;
+
+    @Autowired
+    private IStockAlertService stockAlertService;
 
     @Override
     public Vehicle selectVehicleById(Long id) {
@@ -32,6 +41,38 @@ public class AdminVehicleManageServiceImpl implements IAdminVehicleManageService
 
     @Override
     public int updateVehicle(Vehicle vehicle) {
+        // 如果更新了库存，检查是否需要通知订阅用户
+        if (vehicle.getId() > 0 && vehicle.getStock() != null) {
+            // 获取更新前的车辆信息
+            Vehicle oldVehicle = adminVehicleManageMapper.selectVehicleById((long) vehicle.getId());
+            
+            // 判断库存是否从 0 变为有货
+            if (oldVehicle != null && oldVehicle.getStock() != null 
+                && oldVehicle.getStock() == 0 && vehicle.getStock() > 0) {
+                
+                // 查询所有订阅了该车型的用户（状态为启用且未通知）
+                StockAlert query = new StockAlert();
+                query.setVehicleId((long) vehicle.getId());
+                query.setStatus(1);  // 1表示启用状态
+                List<StockAlert> alerts = stockAlertService.selectStockAlertList(query);
+                
+                // 构建车辆名称（使用旧车辆信息，确保有完整数据）
+                String vehicleName = (oldVehicle.getBrand() != null ? oldVehicle.getBrand() : "") 
+                                   + " " 
+                                   + (oldVehicle.getName() != null ? oldVehicle.getName() : "");
+                vehicleName = vehicleName.trim();
+                
+                // 遍历订阅列表，发送通知
+                for (StockAlert alert : alerts) {
+                    // 只通知未通知过的订阅
+                    if (alert.getNotifyTime() == null) {
+                        stockAlertNotifyService.notifyStockAvailable(alert, vehicleName);
+                    }
+                }
+            }
+        }
+        
+        // 执行更新操作
         return adminVehicleManageMapper.updateVehicle(vehicle);
     }
 

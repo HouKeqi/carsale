@@ -7,6 +7,7 @@ import 'dayjs/locale/zh-cn'
 import router from './router'
 import App from './App.vue'
 import './styles/global.scss'
+import { initWebSocket } from './plugins/websocket'
 
 dayjs.locale('zh-cn')
 
@@ -18,3 +19,6 @@ app.use(router)
 app.use(Antd)
 
 app.mount('#app')
+
+// 初始化 WebSocket
+initWebSocket()

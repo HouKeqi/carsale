@@ -34,7 +34,7 @@
           {{ formatDiscountType(record.discountType) }}
         </template>
         <template v-if="column.key === 'discountValue'">
-          {{ formatDiscountValue(record.discountValue) }}
+          {{ formatDiscountValue(record) }}
         </template>
         <template v-if="column.key === 'startTime'">
           {{ formatDateTime(record.startTime) }}
@@ -87,19 +87,36 @@
             v-model:value="form.discountType"
             placeholder="请选择优惠类型"
             :disabled="!isEdit && dialogTitle === '查看促销详情'"
+            @change="handleDiscountTypeChange"
           >
             <a-select-option :value="0">直降</a-select-option>
             <a-select-option :value="1">赠品</a-select-option>
             <a-select-option :value="2">置换补贴</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item label="优惠金额" name="discountValue">
+        <a-form-item 
+          v-if="form.discountType === 0" 
+          label="优惠金额" 
+          name="discountAmount"
+        >
           <a-input-number
-            v-model:value="form.discountValue"
+            v-model:value="form.discountAmount"
             :precision="2"
             :min="0"
             style="width: 100%"
             placeholder="请输入优惠金额"
+            :disabled="!isEdit && dialogTitle === '查看促销详情'"
+          />
+        </a-form-item>
+        <a-form-item 
+          v-if="form.discountType === 1 || form.discountType === 2" 
+          label="描述文本" 
+          name="description"
+        >
+          <a-textarea
+            v-model:value="form.description"
+            :rows="3"
+            placeholder="请输入描述文本（如：价值3000元的充电桩、置换补贴5000元等）"
             :disabled="!isEdit && dialogTitle === '查看促销详情'"
           />
         </a-form-item>
@@ -263,7 +280,32 @@ const rules = {
   title: [{ required: true, message: '活动名称不能为空', trigger: 'blur' }],
   vehicleId: [{ required: true, message: '关联车型ID不能为空', trigger: 'blur' }],
   discountType: [{ required: true, message: '优惠类型不能为空', trigger: 'change' }],
-  discountValue: [{ required: true, message: '优惠金额不能为空', trigger: 'blur' }],
+  discountAmount: [
+    { 
+      required: true, 
+      message: '优惠金额不能为空', 
+      trigger: 'blur',
+      validator: (rule, value) => {
+        if (form.discountType === 0 && (!value || value <= 0)) {
+          return Promise.reject('直降类型必须填写优惠金额')
+        }
+        return Promise.resolve()
+      }
+    }
+  ],
+  description: [
+    { 
+      required: true, 
+      message: '描述文本不能为空', 
+      trigger: 'blur',
+      validator: (rule, value) => {
+        if ((form.discountType === 1 || form.discountType === 2) && (!value || value.trim() === '')) {
+          return Promise.reject('赠品或置换补贴类型必须填写描述文本')
+        }
+        return Promise.resolve()
+      }
+    }
+  ],
   startTime: [{ required: true, message: '开始时间不能为空', trigger: 'change' }],
   endTime: [{ required: true, message: '结束时间不能为空', trigger: 'change' }]
 }
@@ -280,12 +322,17 @@ const formatDiscountType = (type) => {
 }
 
 // 格式化优惠金额
-const formatDiscountValue = (value) => {
-  if (!value) return '0.00'
-  return Number(value).toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
+const formatDiscountValue = (record) => {
+  if (!record) return '-'
+  // 直降类型显示优惠金额
+  if (record.discountType === 0) {
+    return record.discountAmount ? `¥${Number(record.discountAmount).toFixed(2)}` : '-'
+  }
+  // 赠品或置换补贴类型显示描述文本
+  if (record.discountType === 1 || record.discountType === 2) {
+    return record.description || '-'
+  }
+  return '-'
 }
 
 // 格式化日期时间
@@ -477,7 +524,23 @@ const submitForm = () => {
         submitData.discountType = Number(submitData.discountType)
       }
       
-      // 确保 discountValue 是数字类型
+      // 确保 discountAmount 是数字类型（直降类型）
+      if (submitData.discountType === 0) {
+        if (submitData.discountAmount !== null && submitData.discountAmount !== undefined) {
+          submitData.discountAmount = Number(submitData.discountAmount)
+        } else {
+          submitData.discountAmount = 0
+        }
+        submitData.description = null
+      } else {
+        // 赠品或置换补贴类型，清空 discountAmount
+        submitData.discountAmount = null
+        if (!submitData.description) {
+          submitData.description = ''
+        }
+      }
+      
+      // 保留 discountValue 用于兼容（可选）
       if (submitData.discountValue !== null && submitData.discountValue !== undefined) {
         submitData.discountValue = Number(submitData.discountValue)
       } else {
@@ -535,6 +598,8 @@ const resetForm = () => {
     title: '',
     vehicleId: null,
     discountType: null,
+    discountAmount: 0,
+    description: '',
     discountValue: 0,
     startTime: null,
     endTime: null,

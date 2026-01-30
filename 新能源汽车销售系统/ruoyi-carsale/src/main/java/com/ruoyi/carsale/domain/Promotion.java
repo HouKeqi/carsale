@@ -29,7 +29,12 @@ public class Promotion extends BaseEntity {
     @Excel(name = "优惠类型")
     private Integer discountType;
     @Excel(name = "优惠金额")
-    private Double discountValue;
+    private Double discountAmount;
+    @Excel(name = "描述文本")
+    private String description;
+    @Excel(name = "优惠金额")
+    @Deprecated
+    private Double discountValue; // 保留用于兼容，后续可删除
     @Excel(name = "有效期开始时间")
     private String startTime;
     @Excel(name = "有效期结束时间")
@@ -77,10 +82,28 @@ public class Promotion extends BaseEntity {
         this.discountType = discountType;
     }
 
+    public Double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(Double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @Deprecated
     public Double getDiscountValue() {
         return discountValue;
     }
 
+    @Deprecated
     public void setDiscountValue(Double discountValue) {
         this.discountValue = discountValue;
     }

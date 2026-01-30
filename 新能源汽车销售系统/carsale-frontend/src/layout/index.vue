@@ -11,7 +11,7 @@
               <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" fill="none"/>
             </svg>
           </div>
-          <h1 class="logo-text">新能源销售</h1>
+          <h1 class="logo-text">新能源汽车销售系统</h1>
         </div>
         <a-menu
           v-model:selectedKeys="selectedKeys"
@@ -27,12 +27,12 @@
         <!-- 顶部导航栏 -->
         <a-layout-header class="header">
           <div class="header-left">
-            <a-breadcrumb>
-              <a-breadcrumb-item>
-                <router-link to="/">首页</router-link>
-              </a-breadcrumb-item>
-              <a-breadcrumb-item>{{ currentRouteName }}</a-breadcrumb-item>
-            </a-breadcrumb>
+<!--            <a-breadcrumb>-->
+<!--              <a-breadcrumb-item>-->
+<!--                <router-link to="/">首页</router-link>-->
+<!--              </a-breadcrumb-item>-->
+<!--              <a-breadcrumb-item>{{ currentRouteName }}</a-breadcrumb-item>-->
+<!--            </a-breadcrumb>-->
           </div>
           <div class="header-right">
             <div class="user-info">
@@ -75,7 +75,7 @@ const route = useRoute()
 // 根据路径获取对应的菜单key（用于高亮）
 const getMenuKeyFromPath = (path) => {
   // 如果是详情页面，高亮对应的列表页面菜单项
-  if (path === '/customer/vehicle/detail') {
+  if (path === '/customer/vehicle/detail' || path === '/customer/vehicle/compare') {
     return '/customer/vehicle/list'
   } else if (path === '/customer/order/create' || path === '/customer/order/detail') {
     return '/customer/order/my-list'
@@ -83,6 +83,12 @@ const getMenuKeyFromPath = (path) => {
     return '/customer/evaluation/my-list'
   } else if (path === '/customer/testdrive/create' || path === '/customer/testdrive/detail') {
     return '/customer/testdrive/my-list'
+  } else if (path === '/customer/vehicle/compare') {
+    return '/customer/vehicle/compare'
+  } else if (path === '/customer/stock-alert') {
+    return '/customer/stock-alert'
+  } else if(path === '/admin/order/detail'){
+    return '/admin/order'
   }
   return path
 }
@@ -114,9 +120,9 @@ const menuItems = computed(() => {
   // 实际应该根据用户角色动态生成
   const isAdmin = authStore.roles?.includes('admin') || false
   const isCustomer = authStore.roles?.includes('customer') || false
-  
+
   const items = []
-  
+
   if (isAdmin) {
     items.push(
       { key: '/admin/vehicle', icon: () => h(HomeOutlined), label: '车辆管理' },
@@ -128,17 +134,19 @@ const menuItems = computed(() => {
       { key: '/admin/testdrive', icon: () => h(HomeOutlined), label: '试驾审核' }
     )
   }
-  
+
   if (isCustomer) {
     items.push(
       { key: '/customer/vehicle/list', icon: () => h(HomeOutlined), label: '车辆浏览' },
+      // { key: '/customer/vehicle/compare', icon: () => h(HomeOutlined), label: '车辆对比' },
       { key: '/customer/order/my-list', icon: () => h(HomeOutlined), label: '我的订单' },
       { key: '/customer/evaluation/my-list', icon: () => h(HomeOutlined), label: '我的评价' },
       { key: '/customer/testdrive/my-list', icon: () => h(HomeOutlined), label: '我的预约' },
+      { key: '/customer/stock-alert', icon: () => h(HomeOutlined), label: '库存提醒' },
       { key: '/customer/profile', icon: () => h(HomeOutlined), label: '个人中心' }
     )
   }
-  
+
   // 如果没有角色信息，默认显示所有菜单（开发阶段）
   if (items.length === 0) {
     return [
@@ -157,7 +165,7 @@ const menuItems = computed(() => {
       { key: '/customer/profile', icon: () => h(HomeOutlined), label: '个人中心' }
     ]
   }
-  
+
   return items
 })
 
@@ -215,7 +223,7 @@ const handleCommand = async ({ key }) => {
   border-bottom: 1px solid $border-color;
   gap: 12px;
   background: $primary-bg;
-  
+
   .logo {
     width: 40px;
     height: 40px;
@@ -226,13 +234,13 @@ const handleCommand = async ({ key }) => {
     justify-content: center;
     color: white;
     flex-shrink: 0;
-    
+
     svg {
       width: 24px;
       height: 24px;
     }
   }
-  
+
   .logo-text {
     font-size: 18px;
     font-weight: 600;
@@ -245,24 +253,24 @@ const handleCommand = async ({ key }) => {
   border: none;
   padding: 16px 0;
   background: transparent;
-  
+
   :deep(.ant-menu-item) {
     height: 48px;
     line-height: 48px;
     margin: 4px 12px;
     border-radius: $radius-md;
     transition: all 0.3s ease;
-    
+
     &:hover {
       background: $primary-bg;
       color: $primary-color;
     }
-    
+
     &.ant-menu-item-selected {
       background: $primary-bg;
       color: $primary-color;
       font-weight: 500;
-      
+
       &::before {
         content: '';
         position: absolute;
@@ -303,27 +311,27 @@ const handleCommand = async ({ key }) => {
 
 .header-left {
   flex: 1;
-  
+
   :deep(.ant-breadcrumb) {
     font-size: 14px;
-    
+
     .ant-breadcrumb-link {
       color: $text-secondary;
       font-weight: 400;
-      
+
       a {
         color: $text-secondary;
-        
+
         &:hover {
           color: $primary-color;
         }
       }
     }
-    
+
     .ant-breadcrumb-separator {
       color: $text-secondary;
     }
-    
+
     .ant-breadcrumb-link:last-child {
       color: $text-primary;
       font-weight: 500;
@@ -344,7 +352,7 @@ const handleCommand = async ({ key }) => {
   border-radius: $radius-lg;
   transition: background 0.3s;
   cursor: pointer;
-  
+
   &:hover {
     background: $bg-color;
   }
@@ -369,7 +377,7 @@ const handleCommand = async ({ key }) => {
   font-size: 16px;
   cursor: pointer;
   transition: color 0.3s;
-  
+
   &:hover {
     color: $primary-color;
   }
@@ -388,12 +396,12 @@ const handleCommand = async ({ key }) => {
   .sidebar {
     width: 200px;
   }
-  
+
   .main-container {
     margin-left: 200px;
     width: calc(100% - 200px);
   }
-  
+
   .logo-text {
     display: none;
   }

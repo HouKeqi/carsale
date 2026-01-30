@@ -1,42 +1,72 @@
 <template>
-  <a-card class="main-page">
-    <a-table
-      class="table"
-      :columns="columns"
-      :data-source="testdriveList"
-      :pagination="pagination"
-      :loading="loading"
-      bordered
-    >
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'index'">
-          {{ (pagination.current - 1) * pagination.pageSize + testdriveList.indexOf(record) + 1 }}
+  <div class="testdrive-list-container">
+    <a-card :bordered="false" class="header-card">
+      <div class="header-flex">
+        <div class="title-area">
+          <span class="main-title">我的试驾预约</span>
+          <span class="sub-count">共 {{ pagination.total }} 条</span>
+        </div>
+      </div>
+      <a-tabs v-model:activeKey="queryParams.status" @change="handleStatusChange" class="status-tabs">
+        <a-tab-pane :key="null" tab="全部预约" />
+        <a-tab-pane :key="0" tab="待审核" />
+        <a-tab-pane :key="1" tab="已通过" />
+        <a-tab-pane :key="2" tab="已拒绝" />
+      </a-tabs>
+    </a-card>
+
+    <a-card :bordered="false" class="table-card">
+      <a-table
+          :columns="columns"
+          :data-source="testdriveList"
+          :pagination="pagination"
+          :loading="loading"
+          :scroll="{ x: 1000 }"
+          row-key="id"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'appointInfo'">
+            <div class="id-label">预约号: {{ record.id }}</div>
+            <div class="vehicle-label">
+              {{ vehicleMap[record.vehicleId] ?
+                `${vehicleMap[record.vehicleId].brand} ${vehicleMap[record.vehicleId].name}` :
+                `车型ID: ${record.vehicleId}`
+              }}
+            </div>
+          </template>
+
+          <template v-if="column.key === 'status'">
+            <a-badge :status="getStatusBadge(record.status)" :text="formatStatus(record.status)" />
+          </template>
+
+          <template v-if="column.key === 'appointTime'">
+            <span class="time-text">{{ formatDateTime(record.appointTime) }}</span>
+          </template>
+
+          <template v-if="column.key === 'auditRemark'">
+            <span :class="['remark-text', !record.auditRemark && 'empty-text']">
+              {{ record.auditRemark || '暂无说明' }}
+            </span>
+          </template>
+
+          <template v-if="column.key === 'operation'">
+            <a-space v-if="record.status === 0">
+              <a-popconfirm title="确定要取消这次预约吗？" @confirm="handleCancel(record.id)">
+                <a-button type="link" danger size="small">取消预约</a-button>
+              </a-popconfirm>
+            </a-space>
+            <span v-else class="done-text">-</span>
+          </template>
         </template>
-        <template v-if="column.key === 'status'">
-          {{ formatStatus(record.status) }}
-        </template>
-        <template v-if="column.key === 'appointTime'">
-          {{ formatDateTime(record.appointTime) }}
-        </template>
-        <template v-if="column.key === 'auditTime'">
-          {{ formatDateTime(record.auditTime) }}
-        </template>
-        <template v-if="column.key === 'operation'">
-          <a
-            v-if="record.status === 0"
-            @click="handleCancel(record.id)"
-            style="color: #ff4d4f"
-          >取消预约</a>
-          <span v-else>-</span>
-        </template>
-      </template>
-    </a-table>
-  </a-card>
+      </a-table>
+    </a-card>
+  </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { message, Modal } from 'ant-design-vue'
+import { message } from 'ant-design-vue'
+import { ReloadOutlined } from '@ant-design/icons-vue'
 import request from '@/utils/request'
 import dayjs from 'dayjs'
 
@@ -46,106 +76,36 @@ const vehicleMap = ref({})
 
 const queryParams = reactive({
   pageNum: 1,
-  pageSize: 10
+  pageSize: 10,
+  status: null
 })
 
 const pagination = reactive({
   current: 1,
   pageSize: 10,
   total: 0,
-  showTotal: (total) => `共 ${total} 条`,
-  showSizeChanger: true,
-  pageSizeOptions: ['10', '20', '50', '100'],
+  showTotal: (total) => `共 ${total} 个预约`,
   onChange: (page, size) => {
-    pagination.current = page
-    pagination.pageSize = size
     queryParams.pageNum = page
-    queryParams.pageSize = size
-    getList()
-  },
-  onShowSizeChange: (current, size) => {
-    pagination.current = 1
-    pagination.pageSize = size
-    queryParams.pageNum = 1
     queryParams.pageSize = size
     getList()
   }
 })
 
 const columns = [
-  {
-    title: '序号',
-    key: 'index',
-    align: 'center',
-    width: 60
-  },
-  {
-    title: '预约编号',
-    dataIndex: 'id',
-    key: 'id',
-    width: 180
-  },
-  {
-    title: '车型',
-    key: 'vehicle',
-    width: 200,
-    customRender: ({ record }) => {
-      const vehicle = vehicleMap.value[record.vehicleId]
-      return vehicle ? `${vehicle.brand} ${vehicle.name}` : `车型ID: ${record.vehicleId}`
-    }
-  },
-  {
-    title: '预约门店',
-    dataIndex: 'storeName',
-    key: 'storeName',
-    width: 150
-  },
-  {
-    title: '预约时间',
-    key: 'appointTime',
-    width: 180
-  },
-  {
-    title: '审核状态',
-    key: 'status',
-    align: 'center',
-    width: 100
-  },
-  {
-    title: '审核时间',
-    key: 'auditTime',
-    width: 180
-  },
-  {
-    title: '审核备注',
-    dataIndex: 'auditRemark',
-    key: 'auditRemark'
-  },
-  {
-    title: '操作',
-    key: 'operation',
-    align: 'center',
-    width: 150
-  }
+  { title: '预约与车型', key: 'appointInfo', width: 220, fixed: 'left' },
+  { title: '预约门店', dataIndex: 'storeName', width: 150, ellipsis: true },
+  { title: '预约时间', key: 'appointTime', width: 170 },
+  { title: '审核状态', key: 'status', align: 'center', width: 120 },
+  { title: '审核备注', key: 'auditRemark', ellipsis: true },
 ]
 
-// 格式化状态
-const formatStatus = (status) => {
-  const statusMap = {
-    0: '待审核',
-    1: '通过',
-    2: '拒绝'
-  }
-  return statusMap[status] || '未知'
-}
+const formatStatus = (s) => ({ 0: '待审核', 1: '通过', 2: '拒绝' }[s] || '未知')
 
-// 格式化日期时间
-const formatDateTime = (dateTime) => {
-  if (!dateTime) return '-'
-  return dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss')
-}
+const getStatusBadge = (s) => ({ 0: 'processing', 1: 'success', 2: 'error' }[s] || 'default')
 
-// 查询列表
+const formatDateTime = (val) => val ? dayjs(val).format('YYYY-MM-DD HH:mm') : '-'
+
 const getList = async () => {
   loading.value = true
   try {
@@ -156,65 +116,108 @@ const getList = async () => {
     })
     testdriveList.value = res.rows || res.data || []
     pagination.total = res.total || 0
-    loadVehicleInfo()
+    pagination.current = queryParams.pageNum
+    await loadVehicleInfo()
   } catch (error) {
-    message.error('获取试驾预约列表失败')
+    message.error('获取列表失败')
   } finally {
     loading.value = false
   }
 }
 
-// 加载车辆信息
 const loadVehicleInfo = async () => {
-  const vehicleIds = [...new Set(testdriveList.value.map(t => t.vehicleId))]
-  if (vehicleIds.length > 0) {
-    try {
-      const res = await request({
-        url: '/carsale/vehicle/search',
-        method: 'get',
-        params: { pageNum: 1, pageSize: 100 }
-      })
-      res.rows?.forEach(v => {
-        vehicleMap.value[v.id] = v
-      })
-    } catch (error) {
-      console.error('获取车辆信息失败', error)
-    }
-  }
+  const ids = [...new Set(testdriveList.value.map(t => t.vehicleId))]
+  if (ids.length === 0) return
+  try {
+    const res = await request({ url: '/carsale/vehicle/search', params: { pageNum: 1, pageSize: 100 } })
+    res.rows?.forEach(v => { vehicleMap.value[v.id] = v })
+  } catch (e) { console.error(e) }
 }
 
-// 取消预约
-const handleCancel = (id) => {
-  Modal.confirm({
-    title: '提示',
-    content: '确定要取消该预约吗？',
-    okText: '确定',
-    cancelText: '取消',
-    onOk: async () => {
-      try {
-        await request({
-          url: '/carsale/testdrive/cancel/' + id,
-          method: 'delete'
-        })
-        message.success('取消成功')
-        getList()
-      } catch (error) {
-        message.error('取消失败')
-      }
-    }
-  })
-}
-
-onMounted(() => {
+const handleStatusChange = () => {
+  queryParams.pageNum = 1
   getList()
-})
+}
+
+const handleCancel = async (id) => {
+  try {
+    await request({ url: '/carsale/testdrive/cancel/' + id, method: 'delete' })
+    message.success('已取消预约')
+    getList()
+  } catch (e) { message.error('操作失败') }
+}
+
+onMounted(getList)
 </script>
 
 <style scoped>
-.main-page {
-  padding: 2%;
-  margin-top: 2vh;
-  height: 90vh;
-  overflow-y: auto;
+.testdrive-list-container {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.header-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.main-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-right: 12px;
+}
+
+.sub-count {
+  color: #999;
+  font-size: 13px;
+}
+
+.status-tabs :deep(.ant-tabs-nav) {
+  margin-bottom: 0;
+}
+
+.table-card {
+  border-radius: 8px;
+}
+
+.id-label {
+  font-size: 12px;
+  color: #999;
+}
+
+.vehicle-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.time-text {
+  color: #666;
+  font-size: 13px;
+}
+
+.remark-text {
+  color: #595959;
+}
+
+.empty-text {
+  color: #bfbfbf;
+  font-style: italic;
+}
+
+.done-text {
+  color: #d9d9d9;
+}
+
+:deep(.ant-table-thead > tr > th) {
+  background-color: #fafafa;
 }
 </style>

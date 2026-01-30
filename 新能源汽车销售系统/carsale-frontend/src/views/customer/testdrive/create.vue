@@ -23,7 +23,19 @@
         </a-select>
       </a-form-item>
       <a-form-item label="预约门店" name="storeName">
-        <a-input v-model:value="form.storeName" placeholder="请输入预约门店名称" />
+        <a-select
+          v-model:value="form.storeName"
+          placeholder="请选择预约门店"
+          style="width: 100%"
+        >
+          <a-select-option
+            v-for="store in storeList"
+            :key="store.id"
+            :value="store.name"
+          >
+            {{ store.name }} - {{ store.address }}
+          </a-select-option>
+        </a-select>
       </a-form-item>
       <a-form-item label="预约时间" name="appointTime">
         <a-date-picker
@@ -53,6 +65,7 @@ const router = useRouter()
 const route = useRoute()
 const formRef = ref(null)
 const vehicleList = ref([])
+const storeList = ref([])
 
 const form = reactive({
   vehicleId: null,
@@ -84,6 +97,19 @@ const getVehicleList = async () => {
   }
 }
 
+// 获取门店列表
+const getStoreList = async () => {
+  try {
+    const res = await request({
+      url: '/carsale/store/list',
+      method: 'get'
+    })
+    storeList.value = res.data || []
+  } catch (error) {
+    message.error('获取门店列表失败')
+  }
+}
+
 // 提交表单
 const submitForm = () => {
   formRef.value.validate().then(async () => {
@@ -110,6 +136,7 @@ const handleCancel = () => {
 
 onMounted(() => {
   getVehicleList()
+  getStoreList()
 })
 </script>
 
