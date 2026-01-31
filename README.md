@@ -8,7 +8,7 @@ git clone -b AddNewMoudle https://github.com/HouKeqi/carsale.git
 
 ## 二、前端配置及启动
 
-node.js需要较高的版本 18.18.0以上
+node.js需要较高的版本 18.18.0以上（详细配置查看carsale/新能源汽车销售系统/carsale-frontend/README.md）
 
 ```bash
 cd carsale-frontend
@@ -22,7 +22,7 @@ npm run dev
 -- 创建数据库
 CREATE DATABASE `ry-vue` DEFAULT CHARACTER SET utf8mb4;
 
--- 导入脚本：carsale/新能源汽车销售系统/sql/init0124.sql
+-- 导入脚本：carsale/新能源汽车销售系统/sql/init0130.sql
 ```
 
 ## 四、后端配置及启动
@@ -59,7 +59,15 @@ CREATE DATABASE `ry-vue` DEFAULT CHARACTER SET utf8mb4;
 
 4. IDEA中运行 RuoYiApplication.java
 
-## 五、账号密码
+## 五、访问地址
+
+| 服务    | 地址                  |
+| ------- | --------------------- |
+| 前端    | http://localhost:3000 |
+| 后端API | http://localhost:8080 |
+
+
+## 六、账号密码
 
 | 账号  | 密码     |
 | ----- | -------- |
