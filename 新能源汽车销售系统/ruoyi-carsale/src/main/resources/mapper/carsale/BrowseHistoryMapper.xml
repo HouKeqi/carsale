@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.carsale.mapper.BrowseHistoryMapper">
+
+    <resultMap id="BrowseHistoryMap" type="BrowseHistory">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="vehicleId" column="vehicle_id"/>
+        <result property="browseTime" column="browse_time"/>
+    </resultMap>
+
+    <!-- 新增浏览记录 -->
+    <insert id="insertBrowseHistory" parameterType="BrowseHistory" useGeneratedKeys="true" keyProperty="id">
+        insert into carsale_browse_history (user_id, vehicle_id, browse_time)
+        values (#{userId}, #{vehicleId}, NOW())
+    </insert>
+
+    <!-- 查询用户浏览记录列表 -->
+    <select id="selectBrowseHistoryList" parameterType="BrowseHistory" resultMap="BrowseHistoryMap">
+        select id, user_id, vehicle_id, browse_time
+        from carsale_browse_history
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="vehicleId != null">and vehicle_id = #{vehicleId}</if>
+        </where>
+        order by browse_time desc
+    </select>
+
+    <!-- 查询用户最近浏览的车型ID列表 -->
+    <select id="selectRecentVehicleIds" resultType="Long">
+        select vehicle_id
+        from (
+            select distinct vehicle_id, max(browse_time) as max_time
+            from carsale_browse_history
+            where user_id = #{userId}
+            group by vehicle_id
+            order by max_time desc
+            limit #{limit}
+        ) as t
+    </select>
+
+</mapper>

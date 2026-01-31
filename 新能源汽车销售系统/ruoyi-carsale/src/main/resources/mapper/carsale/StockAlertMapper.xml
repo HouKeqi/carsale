@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.carsale.mapper.StockAlertMapper">
+
+    <resultMap id="StockAlertMap" type="StockAlert">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="vehicleId" column="vehicle_id"/>
+        <result property="status" column="status"/>
+        <result property="notifyTime" column="notify_time"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 新增库存预警订阅 -->
+    <insert id="insertStockAlert" parameterType="StockAlert" useGeneratedKeys="true" keyProperty="id">
+        insert into carsale_stock_alert (user_id, vehicle_id, status)
+        values (#{userId}, #{vehicleId}, #{status})
+        ON DUPLICATE KEY UPDATE status = #{status}
+    </insert>
+
+    <!-- 修改库存预警订阅 -->
+    <update id="updateStockAlert" parameterType="StockAlert">
+        update carsale_stock_alert
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="notifyTime != null">notify_time = #{notifyTime},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 删除库存预警订阅 -->
+    <delete id="deleteStockAlertById" parameterType="Long">
+        delete from carsale_stock_alert where id = #{id}
+    </delete>
+
+    <!-- 根据id查询库存预警订阅 -->
+    <select id="selectStockAlertById" parameterType="Long" resultMap="StockAlertMap">
+        select id, user_id, vehicle_id, status, notify_time, create_time
+        from carsale_stock_alert where id = #{id}
+    </select>
+
+    <!-- 查询库存预警订阅列表 -->
+    <select id="selectStockAlertList" parameterType="StockAlert" resultMap="StockAlertMap">
+        select id, user_id, vehicle_id, status, notify_time, create_time
+        from carsale_stock_alert
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="vehicleId != null">and vehicle_id = #{vehicleId}</if>
+            <if test="status != null">and status = #{status}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 查询需要通知的订阅（车辆有库存但未通知） -->
+    <select id="selectAlertsToNotify" resultMap="StockAlertMap">
+        select sa.id, sa.user_id, sa.vehicle_id, sa.status, sa.notify_time, sa.create_time
+        from carsale_stock_alert sa
+        inner join carsale_vehicle v on sa.vehicle_id = v.id
+        where sa.status = 1
+          and sa.notify_time is null
+          and v.stock > 0
+    </select>
+
+</mapper>
